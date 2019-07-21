@@ -1,0 +1,58 @@
+# Configuration file for mosemm_products.
+[general]
+    # General settings.
+    #
+    #   period_to_export: string, list
+    #       The temporal period for which the monitoring products will
+    #       be generated and exported. To export results of only one
+    #       monthly period, enter the month string in the format
+    #       "YYYYMM"; for example, to export the maps of February of
+    #       2018, enter period_to_export = "201802". To export the
+    #       results of more than one period (month), enter the first
+    #       and last periods of interes in a list; for example, to
+    #       export the maps from February of 2018 to January of 2019,
+    #       enter period_to_export = ["201802", "201901"]. To export
+    #       results of all periods analyzed (from January of 1980, to
+    #       present), enter period_to_export = "all". Finally, if only
+    #       the last period is wanted, enter period_to_export = "last".
+    #   overwrite: bool
+    #       Wether to overwrite (overwrite = true) of not (overwrite =
+    #       false) the existent files.
+    #
+
+    period_to_export = "last"
+    overwrite = false
+    output_prefix = 'IIUNAM_MERRA2_'
+
+[pgdi_maps]
+    export = false
+    input_data_dir = 'C:/Users/rreal/OneDrive/datasets/pysdi_05'
+    input_pattern = '*201906*'
+    input_filter_dir = 'C:/Users/rreal/Mega/projects/multiannual/05-mosemm/main/mosemm_products/inputs/pgdi/sdi_filter.nc4'
+    trim_vmap = 'C:/Users/rreal/OneDrive/geoinfo/division_politica/mexico/limite_nacional/limite_nacional_1a1000000/datos/contdv1m_epsg4326/contdv1m_epsg4326.shp'
+    output_res = 0.0625
+    nodata = -32768
+    output_dir = 'C:/Users/rreal/OneDrive/datasets/mosemm/v2/maps/pgdi'
+
+[intensity_maps]
+    export = true
+    input_dir = 'C:/Users/rreal/OneDrive/datasets/pysdi'
+    output_dir = 'C:/Users/rreal/OneDrive/datasets/mosemm/v2/maps'
+    res = 0.0625
+    nodata = -32768
+
+[tseries]
+    export = false
+    datasets_dir = 'C:/Users/rreal/OneDrive/datasets/pysdi'
+    vmaps_dir ='C:/Users/rreal/Mega/projects/multiannual/0000-inv-001_pysdi/main/pysdi/regions'
+    datasets_patt = ['**/*PRESMORUN-01*.nc', '**/*PRESMORUN-01*.nc4']
+    vmaps_patt = '**/*.shp'
+    output_dir = 'C:/Users/rreal/OneDrive/datasets/conagua_mosemm/v2/time_series'
+
+[reports]
+    export = false
+    input_regions_dir = 'C:/Users/rreal/Dropbox/projects/multiannual/0000-con-01_mosemm/main/mosemm_products/regions'
+    input_data_dir = 'C:/Users/rreal/Dropbox/datasets/pysdi'
+    input_pattern = '*MSDI_PRESMORUN-01*'
+    nodata = -32768
+    output_dir = 'C:/Users/rreal/Dropbox/datasets/mosemm/v2/reports'

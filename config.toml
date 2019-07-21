@@ -25,7 +25,7 @@
     output_prefix = 'IIUNAM_MERRA2_'
 
 [pgdi_maps]
-    export = false
+    export = true
     input_data_dir = 'C:/Users/rreal/OneDrive/datasets/pysdi_05'
     input_pattern = '*201906*'
     input_filter_dir = 'C:/Users/rreal/Mega/projects/multiannual/05-mosemm/main/mosemm_products/inputs/pgdi/sdi_filter.nc4'
@@ -39,6 +39,13 @@
     input_dir = 'C:/Users/rreal/OneDrive/datasets/pysdi'
     output_dir = 'C:/Users/rreal/OneDrive/datasets/mosemm/v2/maps'
     res = 0.0625
+    nodata = -32768
+
+[magnitude_maps]
+    export = true
+    input_dir = 'C:/Users/rreal/OneDrive/datasets/pysdi'
+    output_dir = 'C:/Users/rreal/OneDrive/datasets/mosemm/v2/maps'
+    # res = 0.0625
     nodata = -32768
 
 [tseries]

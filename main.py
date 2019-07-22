@@ -16,8 +16,8 @@ import datetime as dt
 
 import mosemm_products.data_manager as dmgr
 # import mosemm_products.pgdi as pgdi
-import mosemm_products.nc4_to_kml as tokml
-# import mosemm_products.reports_dev as rep
+import mosemm_products.maps as maps
+import mosemm_products.time_series as ts
 
 settings = dmgr.Configurations(config_file='config.toml')
 
@@ -26,23 +26,23 @@ if settings.intensity_maps['export']:
     print("- Exporting drought intensity maps.")
 
     # Available source data to generate drought monitoring products.
-    input_files = dmgr.list_files(
-        parent_dir=settings.intensity_maps['input_dir'],
+    data_files = dmgr.list_files(
+        parent_dir=settings.general['input_dir'],
         pattern='**/*.nc4'
         )
 
     if settings.general['period_to_export'] == 'last':
         available_periods = sorted(list(set([
-            i.stem.split('_')[-1] for i in input_files
+            i.stem.split('_')[-1] for i in data_files
             ])))
         files_to_export = sorted([
             i
-            for i in input_files
+            for i in data_files
             if available_periods[-1] in str(i)
             ])
 
     elif settings.general['period_to_export'] == 'all':
-        files_to_export = sorted(input_files[:])
+        files_to_export = sorted(data_files[:])
 
     elif isinstance(settings.general['period_to_export'], list):
         first = settings.general['period_to_export'][0]
@@ -64,7 +64,7 @@ if settings.intensity_maps['export']:
             ]
         files_to_export = sorted([
             i
-            for i in input_files
+            for i in data_files
             for j in datestamps_to_export
             if j in str(i)
             ])
@@ -72,7 +72,7 @@ if settings.intensity_maps['export']:
     elif isinstance(settings.general['period_to_export'], unicode):
         files_to_export = sorted([
             i
-            for i in input_files
+            for i in data_files
             if settings.general['period_to_export'] in str(i)
             ])
 
@@ -80,9 +80,10 @@ if settings.intensity_maps['export']:
         print("- Nothing to export.")
 
     for f, file_to_export in enumerate(files_to_export):
-        tokml.export_kml_dint(
+        maps.export_dint(
             input_file=file_to_export,
             output_dir=settings.intensity_maps['output_dir'],
+            nodata=settings.general['NODATA'],
             output_fname_prefix=settings.general['output_prefix'],
             overwrite=settings.general['overwrite']
             )
@@ -98,23 +99,23 @@ if settings.magnitude_maps['export']:
     print("- Exporting drought magnitude maps.")
 
     # Available source data to generate drought monitoring products.
-    input_files = dmgr.list_files(
-        parent_dir=settings.magnitude_maps['input_dir'],
+    data_files = dmgr.list_files(
+        parent_dir=settings.general['input_dir'],
         pattern='**/*.nc4'
         )
 
     if settings.general['period_to_export'] == 'last':
         available_periods = sorted(list(set([
-            i.stem.split('_')[-1] for i in input_files
+            i.stem.split('_')[-1] for i in data_files
             ])))
         files_to_export = sorted([
             i
-            for i in input_files
+            for i in data_files
             if ((available_periods[-1] in str(i)) and '-01_' in str(i))
             ])
 
     elif settings.general['period_to_export'] == 'all':
-        files_to_export = sorted([i for i in input_files if '-01_' in str(i)])
+        files_to_export = sorted([i for i in data_files if '-01_' in str(i)])
 
     elif isinstance(settings.general['period_to_export'], list):
         first = settings.general['period_to_export'][0]
@@ -136,7 +137,7 @@ if settings.magnitude_maps['export']:
             ]
         files_to_export = sorted([
             i
-            for i in input_files
+            for i in data_files
             for j in datestamps_to_export
             if ((j in str(i)) and ('-01_' in str(i)))
             ])
@@ -144,7 +145,7 @@ if settings.magnitude_maps['export']:
     elif isinstance(settings.general['period_to_export'], unicode):
         files_to_export = sorted([
             i
-            for i in input_files
+            for i in data_files
             if ((settings.general['period_to_export'] in str(i)) and
                 ('-01_' in str(i)))
             ])
@@ -153,9 +154,10 @@ if settings.magnitude_maps['export']:
         print("- Nothing to export.")
 
     for f, file_to_export in enumerate(files_to_export):
-        tokml.export_kml_dmag(
+        maps.export_dmag(
             input_file=file_to_export,
             output_dir=settings.magnitude_maps['output_dir'],
+            nodata=settings.general['NODATA'],
             output_fname_prefix=settings.general['output_prefix'],
             overwrite=settings.general['overwrite']
             )
@@ -167,6 +169,26 @@ if settings.magnitude_maps['export']:
             )
 
 # Export time series.
+if settings.time_series['export']:
+    # Available source data to generate drought monitoring products.
+    data_files = dmgr.list_files(
+        parent_dir=settings.general['input_dir'],
+        pattern=settings.time_series['datasets_patt']
+        )
+
+    map_files = dmgr.list_files(
+        parent_dir=settings.time_series['vmaps_dir'],
+        pattern='**/*.shp'
+        )
+
+    for map_file in map_files:
+        ts.export_area_ts(
+            data_files=data_files,
+            map_file=map_file,
+            nodata=settings.general['NODATA'],
+            output_dir=settings.time_series['output_dir']
+            )
+
 
 
 
@@ -214,7 +236,7 @@ if settings.magnitude_maps['export']:
 #                regions=lyr,
 #                fielddef=field,
 #                output_dir=settings.reports['output_dir'],
-#                nodata=settings.reports['nodata']
+#                nodata=settings.general['NODATA']
 #                )
 #
 ## Compute and export Proxy groundwater drought index (PGDI)
@@ -237,7 +259,7 @@ if settings.magnitude_maps['export']:
 #        data=pgdi_data.copy(),
 #        trimmer=settings.pgdi['trim_vmap'],
 #        output_res=settings.pgdi['output_res'],
-#        nodata=settings.pgdi['nodata']
+#        nodata=settings.general['NODATA']
 #        )
 #
 #    print("    - Exporting the NetCDF file.")
@@ -257,8 +279,10 @@ if settings.magnitude_maps['export']:
 #        print("    - Exporting the KML file.")
 #        kml_file = str(nc4_file).replace('.nc4', '.kml')
 #
-#        tokml.export_kml_dint(
+#        maps.export_kml_dint(
 #            input_file=str(nc4_file),
 #            output_file=kml_file,
 #            array_name=False
 #            )
+
+print("Process ended at {}.".format(dt.datetime.now()))

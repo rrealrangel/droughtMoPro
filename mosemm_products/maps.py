@@ -47,7 +47,7 @@ def set_grass_env(reference):
         )
 
 
-def export_to_grass(data, map_name, nodata):
+def export_to_grass(data, map_name, nodata=-32768):
     # Export the array as a raster map to GRASS-GIS
     output_map = garray.array()
     output_map[:, :] = np.flipud(data)
@@ -361,7 +361,7 @@ def kml_style_dmag(input_file):
             kml_out.write("\n")
 
 
-def export_kml_dint(
+def export_dint(
         input_file, output_dir, nodata=-32768, output_fname_prefix='',
         overwrite=False
         ):
@@ -408,7 +408,7 @@ def export_kml_dint(
         )
 
 
-def export_kml_dmag(
+def export_dmag(
         input_file, output_dir, nodata=-32768, output_fname_prefix='',
         overwrite=False
         ):

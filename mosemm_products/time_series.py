@@ -260,6 +260,8 @@ def make_mask(array_reference, feature, layer_definition, nodata=-32768):
         }]
     region_datasource = None
     raster_datasource = None
+    region_feature.Destroy
+    region_geometry.Destroy
     return(mask)
 
 
@@ -319,6 +321,7 @@ def export_dint_area(data, output_file):
 
 
 def export_quant(data, output_file):
+    data.load()
     p0 = data.quantile(q=0.00, dim=['lat', 'lon']).drop('quantile')
     p25 = data.quantile(q=0.25, dim=['lat', 'lon']).drop('quantile')
     p50 = data.quantile(q=0.50, dim=['lat', 'lon']).drop('quantile')
@@ -343,12 +346,12 @@ def export_quant(data, output_file):
 
 def export_dmag_area(data, output_file):
     categories = {
-        'not_drought': data < 1,
-        'm1': (1 <= data) & (data < 3),
-        'm2': (3 <= data) & (data < 6),
-        'm3': (6 <= data) & (data < 9),
-        'm4': (9 <= data) & (data < 12),
-        'm5': data >= 12
+        'not_drought': data > -1,
+        'm1': (data <= -1) & (-3 < data),
+        'm2': (data <= -3) & (-6 < data),
+        'm3': (data <= -6) & (-9 < data),
+        'm4': (data <= -9) & (-12 < data),
+        'm5': data <= -12
         }
     not_drought = categories['not_drought'].sum(
         dim=['lat', 'lon'],
@@ -373,7 +376,7 @@ def export_dmag_area(data, output_file):
         data[{'time': -1}].notnull().sum().values
         )
     dmag_area = (data_sum / cells) * 100
-    fields = ['not_drought', 'm1', 'm2', 'm3']
+    fields = ['not_drought', 'm1', 'm2', 'm3', 'm4', 'm5']
     dmag_area = dmag_area.to_dataframe().reindex(fields, axis=1)
     dmag_area.index = [
         str(i.year) + str(i.month).zfill(2) for i in dmag_area.index
@@ -405,6 +408,9 @@ def export_ts(data_files, map_file, nodata, output_dir):
 
     # Mask and analyze data with each region in the vector map.
     for mr, map_region in enumerate(map_layer):
+        id01 = map_region.GetField('ID_01')
+        id02 = map_region.GetField('ID_02')
+
         # Mask the input data
         region_mask = make_mask(
             array_reference=data.Drought_intensity[{'time': -1}].drop('time'),
@@ -415,40 +421,28 @@ def export_ts(data_files, map_file, nodata, output_dir):
         data_masked = data.where(region_mask)
 
         # Export drought intensity: fraction of area.
-        output_dint_area_file = output_subdir / 'dint_area_{}_{}.csv'.format(
-            map_region.GetField('ID_01'),
-            map_region.GetField('ID_02')
-            )
+        output_dint_area_file = output_subdir / 'dint_area_{}_{}.csv'.format(id01, id02)
         export_dint_area(
             data=data_masked.Drought_intensity,
             output_file=output_dint_area_file
             )
 
         # Export drought intensity: quantiles.
-        output_dint_quant_file = output_dir / 'dint_quant_{}_{}.csv'.format(
-            map_region.GetField('ID_01'),
-            map_region.GetField('ID_02')
-            )
+        output_dint_quant_file = output_subdir / 'dint_quant_{}_{}.csv'.format(id01, id02)
         export_quant(
             data=data_masked.Drought_intensity,
             output_file=output_dint_quant_file
             )
 
         # Export droght magnitude: fraction of area.
-        output_dmag_area_file = output_dir / 'dmag_area_{}_{}.csv'.format(
-            map_region.GetField('ID_01'),
-            map_region.GetField('ID_02')
-            )
+        output_dmag_area_file = output_subdir / 'dmag_area_{}_{}.csv'.format(id01, id02)
         export_dmag_area(
             data=data_masked.Drought_magnitude,
             output_file=output_dmag_area_file
             )
 
         # Export drought magnitude: quantiles.
-        output_dmag_quant_file = output_dir / 'dmag_quant_{}_{}.csv'.format(
-            map_region.GetField('ID_01'),
-            map_region.GetField('ID_02')
-            )
+        output_dmag_quant_file = output_subdir / 'dmag_quant_{}_{}.csv'.format(id01, id02)
         export_quant(
             data=data_masked.Drought_magnitude,
             output_file=output_dmag_quant_file
@@ -457,9 +451,12 @@ def export_ts(data_files, map_file, nodata, output_dir):
         dmgr.progress_message(
             current=(mr + 1),
             total=REGIONS_IN_VMAP,
-            message="- Processing '{}'".format(map_datasource.stem),
+            message="- Processing" '{}'".format(map_file.stem)",
             units='feature'
             )
+
+    # Clear things up
+    map_layer.ResetReading()
 
 #def export_time_series(data_files, map_file):
 #    map_datasource = ogr.Open(str(map_file))
@@ -543,8 +540,8 @@ def export_ts(data_files, map_file, nodata, output_dir):
 #
 #        categories = ['not_drought', 'm1', 'm2', 'm3']
 #        fields = ['p0', 'p25', 'p50', 'p75', 'p100']
-#        feature_id_01 = map_region.GetField('ID_01')
-#        feature_id_02 = map_region.GetField('ID_02')
+#        feature_id_01 = id01
+#        feature_id_02 = id02
 #        output_dir = (
 #            Path(config['output_dir']) / '/'.join(
 #                map_datasource.parts[-2:]

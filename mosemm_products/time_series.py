@@ -153,66 +153,18 @@ import mosemm_products.data_manager as dmgr
 #
 #    return(categories)
 #
-
-def intensity_area(data):
-    categories = {
-        'd4': data <= -2,
-        'd3': (-2 < data) & (data <= -1.6),
-        'd2': (-1.6 < data) & (data <= -1.3),
-        'd1': (-1.3 < data) & (data <= -0.8),
-        'd0': (-0.8 < data) & (data <= -0.5),
-        'normal': (-0.5 < data) & (data < 0.5),
-        'w0': (0.5 <= data) & (data < 0.8),
-        'w1': (0.8 <= data) & (data < 1.3),
-        'w2': (1.3 <= data) & (data < 1.6),
-        'w3': (1.6 <= data) & (data < 2),
-        'w4': data >= 2
-        }
-    d4 = categories['d4'].sum(dim=['lat', 'lon'], skipna=True)
-    d3 = categories['d3'].sum(dim=['lat', 'lon'], skipna=True)
-    d2 = categories['d2'].sum(dim=['lat', 'lon'], skipna=True)
-    d1 = categories['d1'].sum(dim=['lat', 'lon'], skipna=True)
-    d0 = categories['d0'].sum(dim=['lat', 'lon'], skipna=True)
-    normal = categories['normal'].sum(dim=['lat', 'lon'], skipna=True)
-    w0 = categories['w0'].sum(dim=['lat', 'lon'], skipna=True)
-    w1 = categories['w1'].sum(dim=['lat', 'lon'], skipna=True)
-    w2 = categories['w2'].sum(dim=['lat', 'lon'], skipna=True)
-    w3 = categories['w3'].sum(dim=['lat', 'lon'], skipna=True)
-    w4 = categories['w4'].sum(dim=['lat', 'lon'], skipna=True)
-    data_sum = xr.Dataset(
-        data_vars={
-            'd4': d4,
-            'd3': d3,
-            'd2': d2,
-            'd1': d1,
-            'd0': d0,
-            'normal': normal,
-            'w0': w0,
-            'w1': w1,
-            'w2': w2,
-            'w3': w3,
-            'w4': w4
-            }
-        )
-
-    cells = float(
-        data[{'time': -1}].notnull().sum().values
-        )
-
-    return((data_sum / cells) * 100)
-
-
-#def magnitude_area(dmag_cats, mask):
-#    not_drought = dmag_cats['not_drought'].sum(
+#
+#def magnitude_area(categories, mask):
+#    not_drought = categories['not_drought'].sum(
 #        dim=['lat', 'lon'],
 #        skipna=True
 #        )
 #
-#    m1 = dmag_cats['m1'].sum(dim=['lat', 'lon'], skipna=True)
-#    m2 = dmag_cats['m2'].sum(dim=['lat', 'lon'], skipna=True)
-#    m3 = dmag_cats['m3'].sum(dim=['lat', 'lon'], skipna=True)
-#    m4 = dmag_cats['m4'].sum(dim=['lat', 'lon'], skipna=True)
-#    m5 = dmag_cats['m5'].sum(dim=['lat', 'lon'], skipna=True)
+#    m1 = categories['m1'].sum(dim=['lat', 'lon'], skipna=True)
+#    m2 = categories['m2'].sum(dim=['lat', 'lon'], skipna=True)
+#    m3 = categories['m3'].sum(dim=['lat', 'lon'], skipna=True)
+#    m4 = categories['m4'].sum(dim=['lat', 'lon'], skipna=True)
+#    m5 = categories['m5'].sum(dim=['lat', 'lon'], skipna=True)
 #    data_sum = xr.Dataset(
 #        data_vars={
 #            'not_drought': not_drought,
@@ -227,25 +179,7 @@ def intensity_area(data):
 #    return((data_sum / np.nansum(mask)) * 100)
 #
 #
-#def quantiles(input_data, nodata):
-#    p0 = input_data.quantile(q=0.00, dim=['lat', 'lon']).drop('quantile')
-#    p25 = input_data.quantile(q=0.25, dim=['lat', 'lon']).drop('quantile')
-#    p50 = input_data.quantile(q=0.50, dim=['lat', 'lon']).drop('quantile')
-#    p75 = input_data.quantile(q=0.75, dim=['lat', 'lon']).drop('quantile')
-#    p100 = input_data.quantile(q=1.00, dim=['lat', 'lon']).drop('quantile')
-#    percentiles = xr.Dataset(
-#        data_vars={
-#            'p0': p0,
-#            'p25': p25,
-#            'p50': p50,
-#            'p75': p75,
-#            'p100': p100
-#            }
-#        )
 #
-#    return(percentiles)
-#
-
 #config = {
 #    'datasets_dir': 'C:/Users/rreal/OneDrive/datasets/pysdi',
 #    'vmaps_dir': (
@@ -329,7 +263,125 @@ def make_mask(array_reference, feature, layer_definition, nodata=-32768):
     return(mask)
 
 
-def export_area_ts(data_files, map_file, nodata, output_dir):
+def export_dint_area(data, output_file):
+    categories = {
+        'd4': data <= -2,
+        'd3': (-2 < data) & (data <= -1.6),
+        'd2': (-1.6 < data) & (data <= -1.3),
+        'd1': (-1.3 < data) & (data <= -0.8),
+        'd0': (-0.8 < data) & (data <= -0.5),
+        'normal': (-0.5 < data) & (data < 0.5),
+        'w0': (0.5 <= data) & (data < 0.8),
+        'w1': (0.8 <= data) & (data < 1.3),
+        'w2': (1.3 <= data) & (data < 1.6),
+        'w3': (1.6 <= data) & (data < 2),
+        'w4': data >= 2
+        }
+    d4 = categories['d4'].sum(dim=['lat', 'lon'], skipna=True)
+    d3 = categories['d3'].sum(dim=['lat', 'lon'], skipna=True)
+    d2 = categories['d2'].sum(dim=['lat', 'lon'], skipna=True)
+    d1 = categories['d1'].sum(dim=['lat', 'lon'], skipna=True)
+    d0 = categories['d0'].sum(dim=['lat', 'lon'], skipna=True)
+    normal = categories['normal'].sum(dim=['lat', 'lon'], skipna=True)
+    w0 = categories['w0'].sum(dim=['lat', 'lon'], skipna=True)
+    w1 = categories['w1'].sum(dim=['lat', 'lon'], skipna=True)
+    w2 = categories['w2'].sum(dim=['lat', 'lon'], skipna=True)
+    w3 = categories['w3'].sum(dim=['lat', 'lon'], skipna=True)
+    w4 = categories['w4'].sum(dim=['lat', 'lon'], skipna=True)
+    data_sum = xr.Dataset(
+        data_vars={
+            'd4': d4,
+            'd3': d3,
+            'd2': d2,
+            'd1': d1,
+            'd0': d0,
+            'normal': normal,
+            'w0': w0,
+            'w1': w1,
+            'w2': w2,
+            'w3': w3,
+            'w4': w4
+            }
+        )
+    cells = float(
+        data[{'time': -1}].notnull().sum().values
+        )
+    dint_area = (data_sum / cells) * 100
+    fields = [
+        'd4', 'd3', 'd2', 'd1', 'd0', 'normal', 'w0', 'w1', 'w2', 'w3',
+        'w4'
+        ]
+    dint_area = dint_area.to_dataframe().reindex(fields, axis=1)
+    dint_area.index = [
+        str(i.year) + str(i.month).zfill(2) for i in dint_area.index
+        ]
+    dint_area.to_csv(output_file)
+
+
+def export_quant(data, output_file):
+    p0 = data.quantile(q=0.00, dim=['lat', 'lon']).drop('quantile')
+    p25 = data.quantile(q=0.25, dim=['lat', 'lon']).drop('quantile')
+    p50 = data.quantile(q=0.50, dim=['lat', 'lon']).drop('quantile')
+    p75 = data.quantile(q=0.75, dim=['lat', 'lon']).drop('quantile')
+    p100 = data.quantile(q=1.00, dim=['lat', 'lon']).drop('quantile')
+    quant = xr.Dataset(
+        data_vars={
+            'p0': p0,
+            'p25': p25,
+            'p50': p50,
+            'p75': p75,
+            'p100': p100
+            }
+        )
+    fields = ['p0', 'p25', 'p50', 'p75', 'p100']
+    quant = quant.to_dataframe().reindex(fields, axis=1)
+    quant.index = [
+        str(i.year)+str(i.month).zfill(2) for i in quant.index
+        ]
+    quant.to_csv(output_file)
+
+
+def export_dmag_area(data, output_file):
+    categories = {
+        'not_drought': data < 1,
+        'm1': (1 <= data) & (data < 3),
+        'm2': (3 <= data) & (data < 6),
+        'm3': (6 <= data) & (data < 9),
+        'm4': (9 <= data) & (data < 12),
+        'm5': data >= 12
+        }
+    not_drought = categories['not_drought'].sum(
+        dim=['lat', 'lon'],
+        skipna=True
+        )
+    m1 = categories['m1'].sum(dim=['lat', 'lon'], skipna=True)
+    m2 = categories['m2'].sum(dim=['lat', 'lon'], skipna=True)
+    m3 = categories['m3'].sum(dim=['lat', 'lon'], skipna=True)
+    m4 = categories['m4'].sum(dim=['lat', 'lon'], skipna=True)
+    m5 = categories['m5'].sum(dim=['lat', 'lon'], skipna=True)
+    data_sum = xr.Dataset(
+        data_vars={
+            'not_drought': not_drought,
+            'm1': m1,
+            'm2': m2,
+            'm3': m3,
+            'm4': m4,
+            'm5': m5
+            }
+        )
+    cells = float(
+        data[{'time': -1}].notnull().sum().values
+        )
+    dmag_area = (data_sum / cells) * 100
+    fields = ['not_drought', 'm1', 'm2', 'm3']
+    dmag_area = dmag_area.to_dataframe().reindex(fields, axis=1)
+    dmag_area.index = [
+        str(i.year) + str(i.month).zfill(2) for i in dmag_area.index
+        ]
+    dmag_area.to_csv(output_file)
+
+
+def export_ts(data_files, map_file, nodata, output_dir):
     # Open the input datasets.
     data = xr.open_mfdataset(
         paths=data_files,
@@ -345,6 +397,12 @@ def export_area_ts(data_files, map_file, nodata, output_dir):
     map_layer.ResetReading()
     REGIONS_IN_VMAP = map_layer.GetFeatureCount()
 
+    # Create the results subdirectory.
+    output_subdir = (
+        Path(output_dir) / '/'.join(map_file.parts[-2:]).split('.')[-2]
+        )
+    output_subdir.mkdir(parents=True, exist_ok=True)
+
     # Mask and analyze data with each region in the vector map.
     for mr, map_region in enumerate(map_layer):
         # Mask the input data
@@ -356,35 +414,52 @@ def export_area_ts(data_files, map_file, nodata, output_dir):
             )
         data_masked = data.where(region_mask)
 
-        # Quantify drought intensity
-        dint_area = intensity_area(data=data_masked.Drought_intensity)
-        fields = [
-            'd4', 'd3', 'd2', 'd1', 'd0', 'normal', 'w0', 'w1', 'w2', 'w3',
-            'w4'
-            ]
-        dint_area = dint_area.to_dataframe().reindex(fields, axis=1)
-        dint_area.index = [
-            str(i.year) + str(i.month).zfill(2) for i in dint_area.index
-            ]
-
-        # Export drought intensity areas.
-        output_subdir = (
-            Path(output_dir) / '/'.join(map_file.parts[-2:]).split('.')[-2]
-            )
-        output_subdir.mkdir(parents=True, exist_ok=True)
-        output_fname = output_subdir / 'area_{}_{}.csv'.format(
+        # Export drought intensity: fraction of area.
+        output_dint_area_file = output_subdir / 'dint_area_{}_{}.csv'.format(
             map_region.GetField('ID_01'),
             map_region.GetField('ID_02')
             )
+        export_dint_area(
+            data=data_masked.Drought_intensity,
+            output_file=output_dint_area_file
+            )
 
-        dint_area.to_csv(output_fname)
+        # Export drought intensity: quantiles.
+        output_dint_quant_file = output_dir / 'dint_quant_{}_{}.csv'.format(
+            map_region.GetField('ID_01'),
+            map_region.GetField('ID_02')
+            )
+        export_quant(
+            data=data_masked.Drought_intensity,
+            output_file=output_dint_quant_file
+            )
 
+        # Export droght magnitude: fraction of area.
+        output_dmag_area_file = output_dir / 'dmag_area_{}_{}.csv'.format(
+            map_region.GetField('ID_01'),
+            map_region.GetField('ID_02')
+            )
+        export_dmag_area(
+            data=data_masked.Drought_magnitude,
+            output_file=output_dmag_area_file
+            )
 
+        # Export drought magnitude: quantiles.
+        output_dmag_quant_file = output_dir / 'dmag_quant_{}_{}.csv'.format(
+            map_region.GetField('ID_01'),
+            map_region.GetField('ID_02')
+            )
+        export_quant(
+            data=data_masked.Drought_magnitude,
+            output_file=output_dmag_quant_file
+            )
 
-
-
-
-
+        dmgr.progress_message(
+            current=(mr + 1),
+            total=REGIONS_IN_VMAP,
+            message="- Processing '{}'".format(map_datasource.stem),
+            units='feature'
+            )
 
 #def export_time_series(data_files, map_file):
 #    map_datasource = ogr.Open(str(map_file))
@@ -434,18 +509,18 @@ def export_area_ts(data_files, map_file, nodata, output_dir):
 #            )
 #
 #        dint_quant = quantiles(
-#            input_data=data_masked.Drought_intensity,
+#            data=data_masked.Drought_intensity,
 #            nodata=-32768
 #            )
 #
 #        # Quantify droght magnitude
-#        dmag_cats = groupby_magnitude(
+#        categories = groupby_magnitude(
 #            magnitude=data_masked.Drought_magnitude,
 #            nodata=-32768
 #            )
 #
 #        dmag_area = magnitude_area(
-#            dmag_cats=dmag_cats,
+#            categories=categories,
 #            mask=vector2array(
 #                layer=region_layer,
 #                xmin=min(data.lon.values),
@@ -458,7 +533,7 @@ def export_area_ts(data_files, map_file, nodata, output_dir):
 #            )
 #
 #        dmag_quant = quantiles(
-#            input_data=data_masked.Drought_magnitude,
+#            data=data_masked.Drought_magnitude,
 #            nodata=-32768
 #            )
 #
@@ -466,8 +541,8 @@ def export_area_ts(data_files, map_file, nodata, output_dir):
 #            'd4', 'd3', 'd2', 'd1', 'd0', 'normal', 'w0', 'w1', 'w2', 'w3',
 #            'w4']
 #
-#        dmag_cats = ['not_drought', 'm1', 'm2', 'm3']
-#        quantile_cats = ['p0', 'p25', 'p50', 'p75', 'p100']
+#        categories = ['not_drought', 'm1', 'm2', 'm3']
+#        fields = ['p0', 'p25', 'p50', 'p75', 'p100']
 #        feature_id_01 = map_region.GetField('ID_01')
 #        feature_id_02 = map_region.GetField('ID_02')
 #        output_dir = (
@@ -479,7 +554,7 @@ def export_area_ts(data_files, map_file, nodata, output_dir):
 #        output_dir.mkdir(parents=True, exist_ok=True)
 #
 #        # Export drought intensity areas.
-#        output_fname = output_dir / 'area_{}_{}.csv'.format(
+#        output_file = output_dir / 'area_{}_{}.csv'.format(
 #            feature_id_01, feature_id_02
 #            )
 #
@@ -487,23 +562,23 @@ def export_area_ts(data_files, map_file, nodata, output_dir):
 #        dint_area.index = [
 #            str(i.year)+str(i.month).zfill(2) for i in dint_area.index]
 #
-#        dint_area.to_csv(output_fname)
+#        dint_area.to_csv(output_file)
 #
 #        # Export drought intensity quantiles.
-#        dint_quant_fname = output_dir / 'dint_{}_{}.csv'.format(
+#        output_dint_quant_file = output_dir / 'dint_{}_{}.csv'.format(
 #            feature_id_01, feature_id_02)
 #
-#        dint_quant = dint_quant.to_dataframe().reindex(quantile_cats, axis=1)
+#        dint_quant = dint_quant.to_dataframe().reindex(fields, axis=1)
 #        dint_quant.index = [
 #            str(i.year)+str(i.month).zfill(2) for i in dint_quant.index]
 #
-#        dint_quant.to_csv(dint_quant_fname)
+#        dint_quant.to_csv(output_dint_quant_file)
 #
 #        # Export drought magnitude quantiles.
 #        dmag_quant_fname = output_dir / 'dmag_{}_{}.csv'.format(
 #            feature_id_01, feature_id_02)
 #
-#        dmag_quant = dmag_quant.to_dataframe().reindex(quantile_cats, axis=1)
+#        dmag_quant = dmag_quant.to_dataframe().reindex(fields, axis=1)
 #        dmag_quant.index = [
 #            str(i.year)+str(i.month).zfill(2) for i in dmag_quant.index]
 #

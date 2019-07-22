@@ -182,7 +182,7 @@ if settings.time_series['export']:
         )
 
     for map_file in map_files:
-        ts.export_area_ts(
+        ts.export_ts(
             data_files=data_files,
             map_file=map_file,
             nodata=settings.general['NODATA'],

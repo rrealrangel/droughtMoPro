@@ -22,7 +22,7 @@
 
     input_dir = 'C:/Users/rreal/OneDrive/datasets/pysdi-v2.1'
     period_to_export = "last"
-    overwrite = false
+    overwrite = false  # Still not implemented.
     output_prefix = 'IIUNAM_MERRA2_'
     NODATA = -32768
 

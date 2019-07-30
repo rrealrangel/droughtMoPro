@@ -15,15 +15,18 @@ import datetime as dt
 # import xarray as xr
 
 import mosemm_products.data_manager as dmgr
-# import mosemm_products.pgdi as pgdi
 import mosemm_products.maps as maps
 import mosemm_products.time_series as ts
+import mosemm_products.report as rep
+# import mosemm_products.pgdi as pgdi
 
+run_start = dt.datetime.now()
+print("---- Process started at {start} ----".format(start=run_start))
 settings = dmgr.Configurations(config_file='config.toml')
 
 # Export drought intensity maps to KML format files.
 if settings.intensity_maps['export']:
-    print("- Exporting drought intensity maps.")
+    print("- Working on drought intensity maps.")
 
     # Available source data to generate drought monitoring products.
     data_files = dmgr.list_files(
@@ -96,7 +99,7 @@ if settings.intensity_maps['export']:
 
 # Export drought magnitude maps to KML format files.
 if settings.magnitude_maps['export']:
-    print("- Exporting drought magnitude maps.")
+    print("- Working on drought magnitude maps.")
 
     # Available source data to generate drought monitoring products.
     data_files = dmgr.list_files(
@@ -170,88 +173,48 @@ if settings.magnitude_maps['export']:
 
 # Export time series.
 if settings.time_series['export']:
-    # Available source data to generate drought monitoring products.
+    print("- Working on time series products.")
     data_files = dmgr.list_files(
         parent_dir=settings.general['input_dir'],
         pattern=settings.time_series['datasets_patt']
         )
-
     map_files = dmgr.list_files(
         parent_dir=settings.time_series['vmaps_dir'],
         pattern='**/*.shp'
         )
+    ts.export_ts(
+        data_files=data_files,
+        map_files=map_files,
+        nodata=settings.general['NODATA'],
+        output_dir=settings.time_series['output_dir']
+        )
 
-    for map_file in map_files:
-        ts.export_ts(
-            data_files=data_files,
-            map_file=map_file,
-            nodata=settings.general['NODATA'],
-            output_dir=settings.time_series['output_dir']
-            )
-
-
-
-
-#
-## Export reports (csv; or xlsx?).
-#if settings.reports['compute']:
-#    print("- Computing the drought reports.")
-#    print("    - Reading regions maps.")
-#
-#    regions_files = dmgr.list_files(
-#        parent_dir=settings.reports['input_regions_dir'],
-#        pattern='*.shp'
-#        )
-#
-#    print("    - Reading SDI files.")
-#
-#    sdi_files = dmgr.list_files(
-#        parent_dir=settings.reports['input_data_dir'],
-#        pattern=settings.reports['input_pattern']
-#        )
-#
-#    data = xr.open_mfdataset(paths=sdi_files, concat_dim='time')
-#    drought_intensity = data.Drought_intensity
-#    drought_magnitude = data.Drought_magnitude
-#
-#    for theme in [regions_files[4]]:  # Using only 'municipios'.
-#        for data in [drought_intensity, drought_magnitude]:
-#            vector_ds = ogr.Open(str(theme))
-#            theme_name = theme.stem
-#            print("    - The theme '{}' was loaded.".format(theme_name))
-#            lyr = vector_ds.GetLayer(0)
-#
-#            # Get a field definition from the original vector file
-#            feature = lyr.GetFeature(0)
-#            field = feature.GetFieldDefnRef(0)
-#
-#            # Reset the original layer so we can read all features
-#            lyr.ResetReading()
-#            feature_number = lyr.GetFeatureCount()
-#            print("    - Rasterizing features and exporting reports.")
-#
-#            rep.make_report(
-#                data=data,
-#                indicator=data.attrs['DroughtFeature'].split('_')[-1],
-#                regions=lyr,
-#                fielddef=field,
-#                output_dir=settings.reports['output_dir'],
-#                nodata=settings.general['NODATA']
-#                )
-#
-## Compute and export Proxy groundwater drought index (PGDI)
-## TODO: Apply the PGDI filter to the SDI files with the original resolution.
+# Export reports (csv; or xlsx?).
+if settings.reports['compute']:
+    print("- Working on drought reports.")
+    print("    - Reading regions maps.")
+    data_files = dmgr.list_files(
+        parent_dir=settings.general['input_dir'],
+        pattern=settings.time_series['datasets_patt']
+        )
+    map_files = dmgr.list_files(
+        parent_dir=settings.time_series['vmaps_dir'],
+        pattern='**/*.shp'
+        )
+    
+# Compute and export Proxy groundwater drought index (PGDI)
+# TODO: Apply the PGDI filter to the SDI files with the original resolution.
 #if settings.pgdi['compute']:
 #    print("- Computing the PGDI.")
 #    print("    - Reading SDI files.")
-#    sdi_files = dmgr.list_files(
+#    data_files = dmgr.list_files(
 #        parent_dir=settings.pgdi['input_data_dir'],
 #        pattern=settings.pgdi['input_pattern']
 #        )
 #
 #    print("    - Applying the SDI filter.")
 #    pgdi_data = pgdi.apply_pgdi_filter(
-#        sdi_files=sdi_files,
+#        data_files=data_files,
 #        sdi_filter=settings.pgdi['input_filter_dir'])
 #
 #    print("    - Interpolating and trimming PGDI dataset.")
@@ -285,4 +248,8 @@ if settings.time_series['export']:
 #            array_name=False
 #            )
 
-print("Process ended at {}.".format(dt.datetime.now()))
+run_end = dt.datetime.now()
+print("---- Process ended at {end}. Time elapsed: {eltime} ----".format(
+    end=run_end,
+    eltime=str(run_end - run_start)
+    ))

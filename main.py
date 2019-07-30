@@ -11,10 +11,10 @@ License
 import datetime as dt
 
 import mosemm_products.data_manager as dmgr
-import mosemm_products.maps as maps
+import mosemm_products.maps_pgdi as pgdi
+import mosemm_products.maps_sdi as maps
+import mosemm_products.reports as rep
 import mosemm_products.time_series as ts
-import mosemm_products.report as rep
-# import mosemm_products.pgdi as pgdi
 
 run_start = dt.datetime.now()
 print("---- Process started at {start} ----".format(start=run_start))

@@ -12,8 +12,11 @@ import numpy as np
 import sys
 
 from collections import OrderedDict
+from pandas import DateOffset
+from pandas import date_range
 from pathlib2 import Path
 import datetime as dt
+import gdal
 import toml
 import xarray as xr
 import gc
@@ -29,6 +32,37 @@ class Configurations():
 
         for key, value in config.items():
             setattr(self, key, value)
+
+
+def vector2array(xmin, ymax, cols, rows, res, layer, nodata):
+    # Create the destination data source
+    targetDS = (
+        gdal.GetDriverByName('MEM').Create(
+            '', cols, rows, gdal.GDT_Byte
+            )
+        )
+
+    targetDS.SetGeoTransform((xmin, res, 0, ymax, 0, - res))
+    band = targetDS.GetRasterBand(1)
+    band.SetNoDataValue(nodata)
+
+    # Rasterize
+    err = gdal.RasterizeLayer(
+        targetDS,
+        [1],
+        layer,
+        burn_values=[1],
+        options=['ALL_TOUCHED=TRUE']
+        )
+
+    if err != 0:
+        print("error:", err)
+
+    # Read as array
+    array = band.ReadAsArray()
+    array = array.astype(float)
+    array[np.where(array == 0)] = np.nan
+    return(np.flipud(array))
 
 
 def load_dir(directory):
@@ -53,7 +87,7 @@ def load_dir(directory):
     return(Path(directory))
 
 
-def list_files(parent_dir, pattern):
+def list_files(parent_dir, pattern, what='all'):
     """List all files in a directory with a specified pattern.
 
     Parameters
@@ -71,7 +105,53 @@ def list_files(parent_dir, pattern):
     for patt in pattern:
         files_list.extend(parent_dir.glob(pattern='**/' + patt))
 
-    return(files_list)
+    if what == 'last':
+        available_periods = sorted(list(set([
+            i.stem.split('_')[-1] for i in files_list
+            ])))
+        return(sorted([
+            i
+            for i in files_list
+            if available_periods[-1] in str(i)
+            ]))
+
+    elif what == 'all':
+        return(sorted(files_list[:]))
+
+    elif isinstance(what, list):
+        first = what[0]
+        first = dt.date(
+            year=int(first[:4]),
+            month=int(first[-2:]),
+            day=1
+            )
+        last = what[-1]
+        last = dt.date(
+            year=int(last[:4]),
+            month=int(last[-2:]),
+            day=1
+            ) + DateOffset(months=1)
+        dates = date_range(start=first, end=last, freq='1M')
+        datestamps_to_export = [
+            str(i.year) + str(i.month).zfill(2)
+            for i in dates
+            ]
+        return(sorted([
+            i
+            for i in files_list
+            for j in datestamps_to_export
+            if j in str(i)
+            ]))
+
+    elif isinstance(what, unicode):
+        return(sorted([
+            i
+            for i in files_list
+            if what in str(i)
+            ]))
+
+    else:
+        print("- Nothing to export.")
 
 
 def name_pgdi_outfile(data, output_dir):

@@ -10,148 +10,179 @@ License
 -------
     GNU General Public License
 """
-import numpy as np
 import ogr
 import pandas as pd
+import xarray as xr
 
-import lib.data_manager as dmgr
-import lib.spatial_analysis as span
+import mosemm_products.data_manager as dmgr
 
 
-def ratio_per_category(input_array, indicator):
-    cells_total = float(np.isfinite(input_array).sum())
+def ratio_per_category(input_data, indicator):
+    cells = float(input_data[{'time': -1}].notnull().sum().values)
     ratio = {}
 
-    if indicator == 'intensity':
+    if indicator == 'Drought_intensity':
         count = {
-            'D0': ((-0.8 < input_array) & (input_array <= -0.5)).sum(),
-            'D1': ((-1.3 < input_array) & (input_array <= -0.8)).sum(),
-            'D2': ((-1.6 < input_array) & (input_array <= -1.3)).sum(),
-            'D3': ((-2.0 < input_array) & (input_array <= -1.6)).sum(),
-            'D4': (input_array <= -2.0).sum()
+            'D0': ((-0.5 >= input_data) & (input_data > -0.8)).sum(
+                dim=['lat', 'lon'],
+                skipna=True
+                ).values[0],
+            'D1': ((-0.8 >= input_data) & (input_data > -1.3)).sum(
+                dim=['lat', 'lon'],
+                skipna=True
+                ).values[0],
+            'D2': ((-1.3 >= input_data) & (input_data > -1.6)).sum(
+                dim=['lat', 'lon'],
+                skipna=True
+                ).values[0],
+            'D3': ((-1.6 >= input_data) & (input_data > -2.0)).sum(
+                dim=['lat', 'lon'],
+                skipna=True
+                ).values[0],
+            'D4': (-2.0 >= input_data).sum(
+                dim=['lat', 'lon'],
+                skipna=True
+                ).values[0]
             }
 
-    elif indicator == 'magnitude':
+    elif indicator == 'Drought_magnitude':
         count = {
-            'M1': ((-3 < input_array) & (input_array <= -1)).sum(),
-            'M2': ((-6 < input_array) & (input_array <= -3)).sum(),
-            'M3': ((-9 < input_array) & (input_array <= -6)).sum(),
-            'M4': ((-12 < input_array) & (input_array <= -9)).sum(),
-            'M5': ((input_array <= -12)).sum()
+            'M1': ((-3 < input_data) & (input_data <= -1)).sum(
+                dim=['lat', 'lon'],
+                skipna=True
+                ).values[0],
+            'M2': ((-6 < input_data) & (input_data <= -3)).sum(
+                dim=['lat', 'lon'],
+                skipna=True
+                ).values[0],
+            'M3': ((-9 < input_data) & (input_data <= -6)).sum(
+                dim=['lat', 'lon'],
+                skipna=True
+                ).values[0],
+            'M4': ((-12 < input_data) & (input_data <= -9)).sum(
+                dim=['lat', 'lon'],
+                skipna=True
+                ).values[0],
+            'M5': ((input_data <= -12)).sum(
+                dim=['lat', 'lon'],
+                skipna=True
+                ).values[0]
             }
 
-    else:
-        print(
-            "Please, enter a valid severity indicator ('intensidad' or "
-            "'magnitud' only)."
-            )
-
-    for category, cells in count.iteritems():
-        ratio[category] = (cells / cells_total) * 100
+    for category, input_data_sum in count.iteritems():
+        ratio[category] = (input_data_sum / cells) * 100
 
     return(ratio)
 
 
-def make_report(data, indicator, regions, fielddef, output_dir, nodata=-32768):
+def make_report(data_files, map_files, output_dir, nodata=-32768):
     """
     Source:
     https://pcjericks.github.io/py-gdalogr-cookbook/vector_layers.html
     """
-    entries = []
+    data = xr.open_mfdataset(paths=data_files)
 
-    for f, feat in enumerate(regions):
-        # We define an output in-memory OGR dataset
-        drv = ogr.GetDriverByName('Memory')
-        dst_ds = drv.CreateDataSource('out')
-        dst_layer = dst_ds.CreateLayer('', geom_type=ogr.wkbPolygon)
+    if len(data_files) == 1:
+        data = data.expand_dims(dim='time')
 
-        # Apply the field definition from the original to the output
-        dst_layer.CreateField(fielddef)
-        feature_defn = dst_layer.GetLayerDefn()
+#    drought_intensity = data.Drought_intensity
+#    drought_magnitude = data.Drought_magnitude
 
-        # Get the geometry of each feature
-        geom = feat.GetGeometryRef()
-
-        # Create an output feature
-        out_geom = ogr.Feature(feature_defn)
-        out_geom.SetGeometry(geom)
-
-        # Add the feature with its geometry to the output layer
-        dst_layer.CreateFeature(out_geom)
-
-        # Apply mask to input data
-        mask = span.vector2array(
-            layer=dst_layer,
-            xmin=min(data.lon.values),
-            xmax=max(data.lon.values),
-            ymin=min(data.lat.values),
-            ymax=max(data.lat.values),
-            res=data.lat.values[1] - data.lat.values[0],
-            nodata=nodata
-            )
-
-        input_array = (data.values * mask)[-1]
-
-        # Compute entry values.
-        ratio = ratio_per_category(
-            input_array=input_array,
-            indicator=indicator
-            )
-
-        ratio['Entidad'] = feat.GetField('NOM_ENT')
-        ratio['Nombre'] = feat.GetField('NOM_MUN')
-        ratio['Clave'] = feat.GetField('NUM_ENT') + feat.GetField('ID_02')
-        entries.append(ratio)
-
-        dmgr.progress_message(
-            current=(f + 1),
-            total=len(regions),
-            message="- Processing",
-            units=None
-            )
-
-    report = pd.DataFrame(entries)
-    report = report[
-        ['Clave', 'Nombre', 'Entidad'] +
-        [c for c in report if c not in ['Clave', 'Nombre', 'Entidad']]
-        ]
-
-    report.to_excel(
-        excel_writer=(
-            output_dir + '/' + indicator + '.xlsx'
-            ),
-        sheet_name=indicator,
-        float_format="%.1f",
-        index=False,
-        engine='openpyxl'
-        )
-    dst_layer.ResetReading()
-
-    data = xr.open_mfdataset(paths=data_files, concat_dim='time')
-    drought_intensity = data.Drought_intensity
-    drought_magnitude = data.Drought_magnitude
-
-    for theme in [map_files[4]]:  # Using only 'municipios'.
-        for data in [drought_intensity, drought_magnitude]:
-            vector_ds = ogr.Open(str(theme))
-            theme_name = theme.stem
-            print("    - The theme '{}' was loaded.".format(theme_name))
-            lyr = vector_ds.GetLayer(0)
-
-            # Get a field definition from the original vector file
-            feature = lyr.GetFeature(0)
-            field = feature.GetFieldDefnRef(0)
-
-            # Reset the original layer so we can read all features
-            lyr.ResetReading()
-            feature_number = lyr.GetFeatureCount()
+#    for data in [drought_intensity, drought_magnitude]:
+    for v, variable in data.data_vars.items():
+        for map_file in [map_files[4]]:
+            map_ = ogr.Open(str(map_file))
+            map_name = map_file.stem
+            print("    - The map '{}' was loaded.".format(map_name))
+            map_layer = map_.GetLayer(0)
+            feature = map_layer.GetFeature(0)
+            map_field = feature.GetFieldDefnRef(0)
+            map_layer.ResetReading()
             print("    - Rasterizing features and exporting reports.")
+            entries = []
 
-            rep.make_report(
-                data=data,
-                indicator=data.attrs['DroughtFeature'].split('_')[-1],
-                regions=lyr,
-                fielddef=field,
-                output_dir=settings.reports['output_dir'],
-                nodata=settings.general['NODATA']
+            for mf, map_feature in enumerate(map_layer):
+                # We define an output in-memory OGR dataset
+                region = ogr.GetDriverByName('Memory').CreateDataSource('out')
+                region_layer = region.CreateLayer('', geom_type=ogr.wkbPolygon)
+
+                # Apply the map_field definition from original to output
+                region_layer.CreateField(map_field)
+                region_feature_definition = region_layer.GetLayerDefn()
+
+                # For each feature, get the geometry
+                map_feature_geometry = map_feature.GetGeometryRef()
+
+                # Create an output feature
+                region_feature_geometry = ogr.Feature(
+                    region_feature_definition
+                    )
+                region_feature_geometry.SetGeometry(map_feature_geometry)
+                region_layer.CreateFeature(region_feature_geometry)
+
+                # Create a mask
+                res = data.attrs['LatitudeResolution']
+                mask = dmgr.vector2array(
+                    res=res,
+                    xmin=min(variable.lon.values) - (res / 2),
+                    ymax=max(variable.lat.values) + (res / 2),
+                    cols=len(variable.lon.values),
+                    rows=len(variable.lat.values),
+                    layer=region_layer,
+                    nodata=nodata
+                    )
+
+                # Mask and trim the input data
+                data_masked = variable * mask
+                notnulls_cols = (
+                    data_masked.isel(
+                        time=-1
+                        ).notnull().sum('lat') > 0
+                    ).values
+                notnulls_rows = (
+                    data_masked.isel(
+                        time=-1
+                        ).notnull().sum('lon') > 0
+                    ).values
+                data_trimmed = data_masked[{
+                    'lat': notnulls_rows,
+                    'lon': notnulls_cols
+                    }]
+
+                # Compute entry values.
+                ratio = ratio_per_category(
+                    input_data=data_trimmed,
+                    indicator=variable.name
+                    )
+
+                ratio['Entidad'] = map_feature.GetField('NOM_ENT')
+                ratio['Nombre'] = map_feature.GetField('NOM_MUN')
+                ratio['Clave'] = (
+                    map_feature.GetField('NUM_ENT') +
+                    map_feature.GetField('ID_02')
+                    )
+                entries.append(ratio)
+
+                dmgr.progress_message(
+                    current=(mf + 1),
+                    total=len(map_layer),
+                    message="- Processing",
+                    units=None
+                    )
+
+            report = pd.DataFrame(entries)
+            report = report[
+                ['Clave', 'Nombre', 'Entidad'] +
+                [c for c in report if c not in ['Clave', 'Nombre', 'Entidad']]
+                ]
+
+            report.to_excel(
+                excel_writer=(
+                    output_dir + '/' + v + '.xlsx'
+                    ),
+                sheet_name=v,
+                float_format="%.1f",
+                index=False,
+                engine='openpyxl'
                 )
+            region_layer.ResetReading()

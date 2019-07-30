@@ -8,11 +8,7 @@ License
 -------
     GNU General Public License
 """
-from pandas import DateOffset
-from pandas import date_range
-# import ogr
 import datetime as dt
-# import xarray as xr
 
 import mosemm_products.data_manager as dmgr
 import mosemm_products.maps as maps
@@ -31,68 +27,21 @@ if settings.intensity_maps['export']:
     # Available source data to generate drought monitoring products.
     data_files = dmgr.list_files(
         parent_dir=settings.general['input_dir'],
-        pattern='**/*.nc4'
+        pattern=settings.intensity_maps['datafile_patt'],
+        what=settings.intensity_maps['period_to_export']
         )
 
-    if settings.general['period_to_export'] == 'last':
-        available_periods = sorted(list(set([
-            i.stem.split('_')[-1] for i in data_files
-            ])))
-        files_to_export = sorted([
-            i
-            for i in data_files
-            if available_periods[-1] in str(i)
-            ])
-
-    elif settings.general['period_to_export'] == 'all':
-        files_to_export = sorted(data_files[:])
-
-    elif isinstance(settings.general['period_to_export'], list):
-        first = settings.general['period_to_export'][0]
-        first = dt.date(
-            year=int(first[:4]),
-            month=int(first[-2:]),
-            day=1
-            )
-        last = settings.general['period_to_export'][-1]
-        last = dt.date(
-            year=int(last[:4]),
-            month=int(last[-2:]),
-            day=1
-            ) + DateOffset(months=1)
-        dates = date_range(start=first, end=last, freq='1M')
-        datestamps_to_export = [
-            str(i.year) + str(i.month).zfill(2)
-            for i in dates
-            ]
-        files_to_export = sorted([
-            i
-            for i in data_files
-            for j in datestamps_to_export
-            if j in str(i)
-            ])
-
-    elif isinstance(settings.general['period_to_export'], unicode):
-        files_to_export = sorted([
-            i
-            for i in data_files
-            if settings.general['period_to_export'] in str(i)
-            ])
-
-    else:
-        print("- Nothing to export.")
-
-    for f, file_to_export in enumerate(files_to_export):
+    for df, data_file in enumerate(data_files):
         maps.export_dint(
-            input_file=file_to_export,
+            input_file=data_file,
             output_dir=settings.intensity_maps['output_dir'],
             nodata=settings.general['NODATA'],
             output_fname_prefix=settings.general['output_prefix'],
             overwrite=settings.general['overwrite']
             )
         dmgr.progress_message(
-            current=(f + 1),
-            total=len(files_to_export),
+            current=(df + 1),
+            total=len(data_files),
             message="- Exporting the drought intensity maps",
             units='maps'
             )
@@ -104,69 +53,21 @@ if settings.magnitude_maps['export']:
     # Available source data to generate drought monitoring products.
     data_files = dmgr.list_files(
         parent_dir=settings.general['input_dir'],
-        pattern='**/*.nc4'
+        pattern=settings.magnitude_maps['datafile_patt'],
+        what=settings.magnitude_maps['period_to_export']
         )
 
-    if settings.general['period_to_export'] == 'last':
-        available_periods = sorted(list(set([
-            i.stem.split('_')[-1] for i in data_files
-            ])))
-        files_to_export = sorted([
-            i
-            for i in data_files
-            if ((available_periods[-1] in str(i)) and '-01_' in str(i))
-            ])
-
-    elif settings.general['period_to_export'] == 'all':
-        files_to_export = sorted([i for i in data_files if '-01_' in str(i)])
-
-    elif isinstance(settings.general['period_to_export'], list):
-        first = settings.general['period_to_export'][0]
-        first = dt.date(
-            year=int(first[:4]),
-            month=int(first[-2:]),
-            day=1
-            )
-        last = settings.general['period_to_export'][-1]
-        last = dt.date(
-            year=int(last[:4]),
-            month=int(last[-2:]),
-            day=1
-            ) + DateOffset(months=1)
-        dates = date_range(start=first, end=last, freq='1M')
-        datestamps_to_export = [
-            str(i.year) + str(i.month).zfill(2)
-            for i in dates
-            ]
-        files_to_export = sorted([
-            i
-            for i in data_files
-            for j in datestamps_to_export
-            if ((j in str(i)) and ('-01_' in str(i)))
-            ])
-
-    elif isinstance(settings.general['period_to_export'], unicode):
-        files_to_export = sorted([
-            i
-            for i in data_files
-            if ((settings.general['period_to_export'] in str(i)) and
-                ('-01_' in str(i)))
-            ])
-
-    else:
-        print("- Nothing to export.")
-
-    for f, file_to_export in enumerate(files_to_export):
+    for df, data_file in enumerate(data_files):
         maps.export_dmag(
-            input_file=file_to_export,
+            input_file=data_file,
             output_dir=settings.magnitude_maps['output_dir'],
             nodata=settings.general['NODATA'],
             output_fname_prefix=settings.general['output_prefix'],
             overwrite=settings.general['overwrite']
             )
         dmgr.progress_message(
-            current=(f + 1),
-            total=len(files_to_export),
+            current=(df + 1),
+            total=len(data_files),
             message="- Exporting the drought magnitude maps",
             units='maps'
             )
@@ -176,11 +77,12 @@ if settings.time_series['export']:
     print("- Working on time series products.")
     data_files = dmgr.list_files(
         parent_dir=settings.general['input_dir'],
-        pattern=settings.time_series['datasets_patt']
+        pattern=settings.time_series['datafile_patt'],
+        what=settings.time_series['period_to_export']
         )
     map_files = dmgr.list_files(
         parent_dir=settings.time_series['vmaps_dir'],
-        pattern='**/*.shp'
+        pattern=settings.time_series['mapfile_patt']
         )
     ts.export_ts(
         data_files=data_files,
@@ -189,64 +91,71 @@ if settings.time_series['export']:
         output_dir=settings.time_series['output_dir']
         )
 
-# Export reports (csv; or xlsx?).
-if settings.reports['compute']:
+# Export reports.
+if settings.reports['export']:
     print("- Working on drought reports.")
     print("    - Reading regions maps.")
     data_files = dmgr.list_files(
         parent_dir=settings.general['input_dir'],
-        pattern=settings.time_series['datasets_patt']
+        pattern=settings.reports['datafile_patt'],
+        what=settings.reports['period_to_export']
         )
     map_files = dmgr.list_files(
         parent_dir=settings.time_series['vmaps_dir'],
-        pattern='**/*.shp'
+        pattern=settings.reports['mapfile_patt']
         )
-    
+    rep.make_report(
+        data_files=data_files,
+        map_files=map_files,
+        output_dir=settings.reports['output_dir'],
+        nodata=settings.general['NODATA']
+        )
+
 # Compute and export Proxy groundwater drought index (PGDI)
 # TODO: Apply the PGDI filter to the SDI files with the original resolution.
-#if settings.pgdi['compute']:
-#    print("- Computing the PGDI.")
-#    print("    - Reading SDI files.")
-#    data_files = dmgr.list_files(
-#        parent_dir=settings.pgdi['input_data_dir'],
-#        pattern=settings.pgdi['input_pattern']
-#        )
-#
-#    print("    - Applying the SDI filter.")
-#    pgdi_data = pgdi.apply_pgdi_filter(
-#        data_files=data_files,
-#        sdi_filter=settings.pgdi['input_filter_dir'])
-#
-#    print("    - Interpolating and trimming PGDI dataset.")
-#    pgdi_out = pgdi.interp_n_trim_dataset(
-#        data=pgdi_data.copy(),
-#        trimmer=settings.pgdi['trim_vmap'],
-#        output_res=settings.pgdi['output_res'],
-#        nodata=settings.general['NODATA']
-#        )
-#
-#    print("    - Exporting the NetCDF file.")
-#    nc4_file = dmgr.name_pgdi_outfile(
-#        data=pgdi_out,
-#        output_dir=settings.pgdi['output_dir']
-#        )
-#
-#    nc4_file.parent.mkdir(
-#        parents=True,
-#        exist_ok=True
-#        )
-#
-#    pgdi_out.to_netcdf(str(nc4_file))
-#
-#    if settings.pgdi['export_kml']:
-#        print("    - Exporting the KML file.")
-#        kml_file = str(nc4_file).replace('.nc4', '.kml')
-#
-#        maps.export_kml_dint(
-#            input_file=str(nc4_file),
-#            output_file=kml_file,
-#            array_name=False
-#            )
+if settings.pgdi['compute']:
+    print("- Computing the PGDI.")
+    print("    - Reading SDI files.")
+    data_files = dmgr.list_files(
+        parent_dir=settings.pgdi['input_data_dir'],
+        pattern=settings.pgdi['input_pattern']
+        )
+
+    print("    - Applying the SDI filter.")
+    pgdi_data = pgdi.apply_pgdi_filter(
+        data_files=data_files,
+        sdi_filter=settings.pgdi['input_filter_dir'])
+
+    print("    - Interpolating and trimming PGDI dataset.")
+    pgdi_out = pgdi.interp_n_trim_dataset(
+        data=pgdi_data.copy(),
+        trimmer=settings.pgdi['trim_vmap'],
+        output_res=settings.pgdi['output_res'],
+        nodata=settings.general['NODATA']
+        )
+
+    print("    - Exporting the NetCDF file.")
+    nc4_file = dmgr.name_pgdi_outfile(
+        data=pgdi_out,
+        output_dir=settings.pgdi['output_dir']
+        )
+
+    nc4_file.parent.mkdir(
+        parents=True,
+        exist_ok=True
+        )
+
+    pgdi_out.to_netcdf(str(nc4_file))
+
+    if settings.pgdi['export_kml']:
+        print("    - Exporting the KML file.")
+        kml_file = str(nc4_file).replace('.nc4', '.kml')
+
+        maps.export_kml_dint(
+            input_file=str(nc4_file),
+            output_file=kml_file,
+            array_name=False
+            )
 
 run_end = dt.datetime.now()
 print("---- Process ended at {end}. Time elapsed: {eltime} ----".format(

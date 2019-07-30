@@ -21,34 +21,41 @@
     #
 
     input_dir = 'C:/Users/rreal/OneDrive/datasets/pysdi-v2.1'
-    period_to_export = "last"
     overwrite = false  # Still not implemented.
     output_prefix = 'IIUNAM_MERRA2_'
     NODATA = -32768
 
 [intensity_maps]
-    export = true
+    export = false
+    datafile_patt = '**/*.nc4'
+    period_to_export = "last"
     output_dir = 'C:/Users/rreal/OneDrive/datasets/mosemm/v2/maps'
     # res = 0.0625
 
 [magnitude_maps]
-    export = true
+    export = false
+    datafile_patt = '**/*.nc4'
+    period_to_export = "last"
     output_dir = 'C:/Users/rreal/OneDrive/datasets/mosemm/v2/maps'
 
 [time_series]
-    export = true
-    output_dir = 'C:/Users/rreal/OneDrive/datasets/mosemm/test/time_series'
+    export = false
+    period_to_export = "all"
+    output_dir = 'C:/Users/rreal/OneDrive/datasets/mosemm/test-3/time_series'
     vmaps_dir = 'C:/Users/rreal/Mega/projects/multiannual/05-mosemm/main/sample/time_series/regions'
-    datasets_patt = '**/*PRESMORUN-01*.nc4'   
+    datafile_patt = '**/*PRESMORUN-01*.nc4'
+    mapfile_patt = '**/*.shp'
 
 [reports]
-    export = false
+    export = true
+    period_to_export = "last"
     input_regions_dir = 'C:/Users/rreal/Dropbox/projects/multiannual/0000-con-01_mosemm/main/mosemm_products/regions'
-    input_pattern = '*MSDI_PRESMORUN-01*'
-    output_dir = 'C:/Users/rreal/Dropbox/datasets/mosemm/v2/reports'
+    datafile_patt = '**/*PRESMORUN-01*.nc4'
+    output_dir = 'C:/Users/rreal/OneDrive/datasets/mosemm/test-3/reports'
+    mapfile_patt = '**/*.shp'
 
 [pgdi_maps]
-    export = true
+    export = false
     input_data_dir = 'C:/Users/rreal/OneDrive/datasets/pysdi_05'
     input_pattern = '*201906*'
     input_filter_dir = 'C:/Users/rreal/Mega/projects/multiannual/05-mosemm/main/mosemm_products/inputs/pgdi/sdi_filter.nc4'

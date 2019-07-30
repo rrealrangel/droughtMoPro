@@ -13,44 +13,16 @@ Functions:
     * Aggregate by date
     * Export reports
 """
+# TODO: Merge intensity_area() and magnitude_area() into one single
+# function.
+# TODO: (In doubt) Make a function (maybe in data_manager.py) to read
+# the map_file and iterate between its features.
+
 from pathlib2 import Path
-import gdal
-import numpy as np
 import ogr
 import xarray as xr
 
 import mosemm_products.data_manager as dmgr
-
-
-def vector2array(xmin, ymax, cols, rows, res, layer, nodata):
-    # Create the destination data source
-    targetDS = (
-        gdal.GetDriverByName('MEM').Create(
-            '', cols, rows, gdal.GDT_Byte
-            )
-        )
-
-    targetDS.SetGeoTransform((xmin, res, 0, ymax, 0, - res))
-    band = targetDS.GetRasterBand(1)
-    band.SetNoDataValue(nodata)
-
-    # Rasterize
-    err = gdal.RasterizeLayer(
-        targetDS,
-        [1],
-        layer,
-        burn_values=[1],
-        options=['ALL_TOUCHED=TRUE']
-        )
-
-    if err != 0:
-        print("error:", err)
-
-    # Read as array
-    array = band.ReadAsArray()
-    array = array.astype(float)
-    array[np.where(array == 0)] = np.nan
-    return(np.flipud(array))
 
 
 def intensity_area(input_data, header):
@@ -164,44 +136,43 @@ def export_ts(data_files, map_files, nodata, output_dir):
     dmag_header = ['not_drought', 'm1', 'm2', 'm3', 'm4', 'm5']
     quantile_header = ['min', 'p25', 'p50', 'p75', 'max']
 
-    for path in map_files:
-        vmap = ogr.Open(str(path))
-        vmap_layer = vmap.GetLayer(0)
-        feature = vmap_layer.GetFeature(0)
-        vmap_field = feature.GetFieldDefnRef(0)
-        vmap_layer.ResetReading()
-        regions_in_map = vmap_layer.GetFeatureCount()
+    for map_file in map_files:
+        map_ = ogr.Open(str(map_file))
+        map_layer = map_.GetLayer(0)
+        feature = map_layer.GetFeature(0)
+        map_field = feature.GetFieldDefnRef(0)
+        map_layer.ResetReading()
         output_subdir = (
-            Path(output_dir) / '/'.join(path.parts[-2:]).split('.')[-2]
+            Path(output_dir) / '/'.join(map_file.parts[-2:]).split('.')[-2]
             )
         output_subdir.mkdir(parents=True, exist_ok=True)
 
-        for f, vmap_feature in enumerate(vmap_layer):
+        for mf, map_feature in enumerate(map_layer):
             # We define an output in-memory OGR dataset
-            mmap = ogr.GetDriverByName('Memory').CreateDataSource('out')
-            mmap_layer = mmap.CreateLayer('', geom_type=ogr.wkbPolygon)
+            region = ogr.GetDriverByName('Memory').CreateDataSource('out')
+            region_layer = region.CreateLayer('', geom_type=ogr.wkbPolygon)
 
-            # Apply the vmap_field definition from the original to the output
-            mmap_layer.CreateField(vmap_field)
-            mmap_featdef = mmap_layer.GetLayerDefn()
+            # Apply the map_field definition from original to output
+            region_layer.CreateField(map_field)
+            region_feature_definition = region_layer.GetLayerDefn()
 
             # For each feature, get the geometry
-            vmap_geom = vmap_feature.GetGeometryRef()
+            map_feature_geometry = map_feature.GetGeometryRef()
 
             # Create an output feature
-            out_geom = ogr.Feature(mmap_featdef)
-            out_geom.SetGeometry(vmap_geom)
-            mmap_layer.CreateFeature(out_geom)
+            region_feature_geometry = ogr.Feature(region_feature_definition)
+            region_feature_geometry.SetGeometry(map_feature_geometry)
+            region_layer.CreateFeature(region_feature_geometry)
 
             # Create a mask
             res = data.attrs['LatitudeResolution']
-            mask = vector2array(
+            mask = dmgr.vector2array(
                 res=res,
                 xmin=min(data.lon.values) - (res / 2),
                 ymax=max(data.lat.values) + (res / 2),
                 cols=len(data.lon.values),
                 rows=len(data.lat.values),
-                layer=mmap_layer,
+                layer=region_layer,
                 nodata=nodata
                 )
 
@@ -229,8 +200,8 @@ def export_ts(data_files, map_files, nodata, output_dir):
                 )
             dint_area_fname = output_subdir / (
                 'dint_area_{id01}_{id02}.csv'.format(
-                    id01=vmap_feature.GetField('ID_01'),
-                    id02=vmap_feature.GetField('ID_02')
+                    id01=map_feature.GetField('ID_01'),
+                    id02=map_feature.GetField('ID_02')
                     )
                 )
             dint_area.to_csv(dint_area_fname)
@@ -242,8 +213,8 @@ def export_ts(data_files, map_files, nodata, output_dir):
                 )
             dint_quant_fname = output_subdir / (
                 'dint_{id01}_{id02}.csv'.format(
-                    id01=vmap_feature.GetField('ID_01'),
-                    id02=vmap_feature.GetField('ID_02')
+                    id01=map_feature.GetField('ID_01'),
+                    id02=map_feature.GetField('ID_02')
                     )
                 )
             dint_quant.to_csv(dint_quant_fname)
@@ -255,8 +226,8 @@ def export_ts(data_files, map_files, nodata, output_dir):
                 )
             dmag_area_fname = output_subdir / (
                 'dmag_area_{id01}_{id02}.csv'.format(
-                    id01=vmap_feature.GetField('ID_01'),
-                    id02=vmap_feature.GetField('ID_02')
+                    id01=map_feature.GetField('ID_01'),
+                    id02=map_feature.GetField('ID_02')
                     )
                 )
             dmag_area.to_csv(dmag_area_fname)
@@ -267,22 +238,22 @@ def export_ts(data_files, map_files, nodata, output_dir):
                 header=quantile_header
                 )
             dmag_quant_fname = output_subdir / 'dmag_{id01}_{id02}.csv'.format(
-                id01=vmap_feature.GetField('ID_01'),
-                id02=vmap_feature.GetField('ID_02')
+                id01=map_feature.GetField('ID_01'),
+                id02=map_feature.GetField('ID_02')
                 )
             dmag_quant.to_csv(dmag_quant_fname)
 
             # Progress message.
             dmgr.progress_message(
-                current=f + 1,
-                total=regions_in_map,
-                message="- Processing '{}'".format(path.stem),
+                current=mf + 1,
+                total=len(map_layer),
+                message="- Processing '{}'".format(map_file.stem),
                 units='feature'
                 )
 
         # Clear things up
-        out_geom.Destroy
-        vmap_geom.Destroy
+        region_feature_geometry.Destroy
+        map_feature_geometry.Destroy
 
         # Reset the output layer to the 0th geometry
-        mmap_layer.ResetReading()
+        region_layer.ResetReading()

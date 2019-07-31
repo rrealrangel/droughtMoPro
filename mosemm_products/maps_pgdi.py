@@ -45,16 +45,16 @@ index_cats = {
     }
 
 
-def apply_pgdi_filter(sdi_files, sdi_filter):
+def apply_pgdi_filter(data_files, sdi_filter):
     dataarrays = {}
 
     pgdi_cats = xr.open_dataarray(
         filename_or_obj=sdi_filter
         )
 
-    for sdi_file in sdi_files:
+    for data_file in data_files:
         dataarray = xr.open_dataset(
-            filename_or_obj=sdi_file
+            filename_or_obj=data_file
             )['Drought_intensity']
 
         index_name = (
@@ -86,12 +86,11 @@ def apply_pgdi_filter(sdi_files, sdi_filter):
 
 
 def interp_n_trim_dataset(data, trimmer, output_res, nodata=-32768):
-    input_yres = data.lat.values[1] - data.lat.values[0]
-    input_xres = data.lon.values[1] - data.lon.values[0]
-    ymin = min(data.lat.values) - (input_yres / 2)
-    ymax = max(data.lat.values) + (input_yres / 2)
-    xmin = min(data.lon.values) - (input_xres / 2)
-    xmax = max(data.lon.values) + (input_xres / 2)
+    input_res = data.lat.values[1] - data.lat.values[0]
+    ymin = min(data.lat.values) - (input_res / 2)
+    ymax = max(data.lat.values) + (input_res / 2)
+    xmin = min(data.lon.values) - (input_res / 2)
+    xmax = max(data.lon.values) + (input_res / 2)
     output_lat = np.arange(ymin + (output_res / 2), ymax, output_res)
     output_lon = np.arange(xmin + (output_res / 2), xmax, output_res)
     data_stacked = data.stack(x=['lat', 'lon'])
@@ -134,3 +133,43 @@ def interp_n_trim_dataset(data, trimmer, output_res, nodata=-32768):
         )
 
     return(data_trimmed)
+
+
+def export_pgdi_maps(
+        data_files, filter_file, trim_vmap, output_res, nodata=-32768
+        ):
+    pgdi_data = apply_pgdi_filter(
+        data_files=data_files,
+        sdi_filter=filter_file
+        )
+
+    print("    - Interpolating and trimming PGDI dataset.")
+    pgdi_out = interp_n_trim_dataset(
+        data=pgdi_data,
+        trimmer=trim_vmap,
+        output_res=output_res,
+        nodata=nodata
+        )
+
+    print("    - Exporting the NetCDF file.")
+    nc4_file = dmgr.name_pgdi_outfile(
+        data=pgdi_out,
+        output_dir=settings.pgdi['output_dir']
+        )
+
+    nc4_file.parent.mkdir(
+        parents=True,
+        exist_ok=True
+        )
+
+    pgdi_out.to_netcdf(str(nc4_file))
+
+    if settings.pgdi['export_kml']:
+        print("    - Exporting the KML file.")
+        kml_file = str(nc4_file).replace('.nc4', '.kml')
+
+        maps.export_kml_dint(
+            input_file=str(nc4_file),
+            output_file=kml_file,
+            array_name=False
+            )

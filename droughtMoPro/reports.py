@@ -14,7 +14,7 @@ import ogr
 import pandas as pd
 import xarray as xr
 
-import mosemm_products.data_manager as dmgr
+import data_manager as dmgr
 
 
 def ratio_per_category(input_data, indicator):

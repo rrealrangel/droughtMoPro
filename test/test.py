@@ -10,15 +10,15 @@ License
 """
 import datetime as dt
 
-import mosemm_products.data_manager as dmgr
-import mosemm_products.maps_pgdi as pgdi
-import mosemm_products.maps_sdi as maps
-import mosemm_products.reports as rep
-import mosemm_products.time_series as ts
+from droughtMoPro import data_manager as dmgr
+from droughtMoPro import maps_pgdi as pgdi
+from droughtMoPro import maps_sdi as maps
+from droughtMoPro import reports as rep
+from droughtMoPro import time_series as ts
 
 run_start = dt.datetime.now()
 print("---- Process started at {start} ----".format(start=run_start))
-settings = dmgr.Configurations(config_file='config.toml')
+settings = dmgr.Configurations(config_file='test.toml')
 
 # Export drought intensity maps to KML format files.
 if settings.intensity_maps['export']:
@@ -52,7 +52,7 @@ if settings.magnitude_maps['export']:
 
     # Available source data to generate drought monitoring products.
     data_files = dmgr.list_files(
-        parent_dir=settings.general['input_dir'],
+        parent_dir=settings.general['input_data_dir'],
         pattern=settings.magnitude_maps['data_fpatt'],
         what=settings.magnitude_maps['output_period_to_export']
         )
@@ -76,7 +76,7 @@ if settings.magnitude_maps['export']:
 if settings.time_series['export']:
     print("- Working on time series products.")
     data_files = dmgr.list_files(
-        parent_dir=settings.general['input_dir'],
+        parent_dir=settings.general['input_data_dir'],
         pattern=settings.time_series['input_data_fpatt'],
         what=settings.time_series['output_period_to_export']
         )
@@ -96,7 +96,7 @@ if settings.reports['export']:
     print("- Working on drought reports.")
     print("    - Reading regions maps.")
     data_files = dmgr.list_files(
-        parent_dir=settings.general['input_dir'],
+        parent_dir=settings.general['input_data_dir'],
         pattern=settings.reports['input_data_fpatt'],
         what=settings.reports['output_period_to_export']
         )

@@ -22,10 +22,18 @@ from pathlib2 import Path
 import ogr
 import xarray as xr
 
-import mosemm_products.data_manager as dmgr
-
+import data_manager as dmgr
 
 def intensity_area(input_data, header):
+    """
+    Parameters
+    ----------
+    input_data
+    header
+
+    Returns
+    -------
+    """
     dint_cats = {
         'not_drought': input_data >= -0.5,
         'd0': (input_data <= -0.5) & (-0.8 < input_data),
@@ -60,8 +68,17 @@ def intensity_area(input_data, header):
 
 
 def magnitude_area(input_data, header):
+    """
+    Parameters
+    ----------
+    input_data
+    header
+
+    Returns
+    -------
+    """
     dmag_cats = {
-        'not_drought': input_data > 1,
+        'not_drought': input_data > -1,
         'm1': (input_data <= -1) & (-3 < input_data),
         'm2': (input_data <= -3) & (-6 < input_data),
         'm3': (input_data <= -6) & (-9 < input_data),
@@ -95,6 +112,15 @@ def magnitude_area(input_data, header):
 
 
 def quantiles(input_data, header):
+    """
+    Parameters
+    ----------
+    input_data
+    header
+
+    Returns
+    -------
+    """
     quant = xr.Dataset(
         data_vars={
             'p0': input_data.quantile(
@@ -130,8 +156,23 @@ def quantiles(input_data, header):
 
 
 def export_ts(data_files, map_files, nodata, output_dir):
-    print("    - Importing data.")
-    data = xr.open_mfdataset(paths=data_files, concat_dim='time').load()
+    """
+    Parameters
+    ----------
+    data_files
+    map_files
+    nodata
+    output_dir
+
+    Returns
+    -------
+    """
+    print("    - Importing data. This may take a while. Please wait.")
+    data = xr.open_mfdataset(
+        paths=data_files,
+        concat_dim='time',
+        autoclose=True
+        )
     dint_header = ['not_drought', 'd0', 'd1', 'd2', 'd3', 'd4']
     dmag_header = ['not_drought', 'm1', 'm2', 'm3', 'm4', 'm5']
     quantile_header = ['min', 'p25', 'p50', 'p75', 'max']
@@ -191,7 +232,7 @@ def export_ts(data_files, map_files, nodata, output_dir):
             data_trimmed = data_masked[{
                 'lat': notnulls_rows,
                 'lon': notnulls_cols
-                }]
+                }].load()
 
             # ---- Drought intensity: area fraction ----
             dint_area = intensity_area(
@@ -199,7 +240,7 @@ def export_ts(data_files, map_files, nodata, output_dir):
                 header=dint_header
                 )
             dint_area_fname = output_subdir / (
-                'dint_area_{id01}_{id02}.csv'.format(
+                '{id01}_{id02}_dint_area.csv'.format(
                     id01=map_feature.GetField('ID_01'),
                     id02=map_feature.GetField('ID_02')
                     )
@@ -212,7 +253,7 @@ def export_ts(data_files, map_files, nodata, output_dir):
                 header=quantile_header
                 )
             dint_quant_fname = output_subdir / (
-                'dint_{id01}_{id02}.csv'.format(
+                '{id01}_{id02}_dint_quant.csv'.format(
                     id01=map_feature.GetField('ID_01'),
                     id02=map_feature.GetField('ID_02')
                     )
@@ -225,7 +266,7 @@ def export_ts(data_files, map_files, nodata, output_dir):
                 header=dmag_header
                 )
             dmag_area_fname = output_subdir / (
-                'dmag_area_{id01}_{id02}.csv'.format(
+                '{id01}_{id02}_dmag_area.csv'.format(
                     id01=map_feature.GetField('ID_01'),
                     id02=map_feature.GetField('ID_02')
                     )
@@ -237,9 +278,11 @@ def export_ts(data_files, map_files, nodata, output_dir):
                 input_data=data_trimmed.Drought_magnitude,
                 header=quantile_header
                 )
-            dmag_quant_fname = output_subdir / 'dmag_{id01}_{id02}.csv'.format(
-                id01=map_feature.GetField('ID_01'),
-                id02=map_feature.GetField('ID_02')
+            dmag_quant_fname = output_subdir / (
+                '{id01}_{id02}_dmag_quant.csv'.format(
+                    id01=map_feature.GetField('ID_01'),
+                    id02=map_feature.GetField('ID_02')
+                    )
                 )
             dmag_quant.to_csv(dmag_quant_fname)
 

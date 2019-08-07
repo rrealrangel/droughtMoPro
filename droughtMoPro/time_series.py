@@ -22,7 +22,7 @@ from pathlib2 import Path
 import ogr
 import xarray as xr
 
-import mosemm_products.data_manager as dmgr
+import data_manager as dmgr
 
 
 def intensity_area(input_data, header):
@@ -212,7 +212,7 @@ def export_ts(data_files, map_files, nodata, output_dir):
                 header=quantile_header
                 )
             dint_quant_fname = output_subdir / (
-                'dint_{id01}_{id02}.csv'.format(
+                'dint_quant_{id01}_{id02}.csv'.format(
                     id01=map_feature.GetField('ID_01'),
                     id02=map_feature.GetField('ID_02')
                     )
@@ -237,9 +237,11 @@ def export_ts(data_files, map_files, nodata, output_dir):
                 input_data=data_trimmed.Drought_magnitude,
                 header=quantile_header
                 )
-            dmag_quant_fname = output_subdir / 'dmag_{id01}_{id02}.csv'.format(
-                id01=map_feature.GetField('ID_01'),
-                id02=map_feature.GetField('ID_02')
+            dmag_quant_fname = output_subdir / (
+                'dmag_quant_{id01}_{id02}.csv'.format(
+                    id01=map_feature.GetField('ID_01'),
+                    id02=map_feature.GetField('ID_02')
+                    )
                 )
             dmag_quant.to_csv(dmag_quant_fname)
 

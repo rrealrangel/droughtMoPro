@@ -39,12 +39,12 @@
     output_dir = 'C:/Users/rreal/OneDrive/datasets/mosemm-v2/maps'
 
 [time_series]
-    export = false
+    export = true
     input_data_fpatt = '**/*PRESMORUN-01*.nc4'
-    input_vmaps_dir = 'C:/Users/rreal/Mega/projects/multiannual/05-mosemm/main/sample/time_series/regions'
+    input_vmaps_dir = 'C:/Users/rreal/Mega/projects/multiannual/mosemm/main/droughtMoPro/test/regions/hidrografia'
     input_mapfile_patt = '**/*.shp'
     output_period_to_export = "all"
-    output_dir = 'C:/Users/rreal/OneDrive/datasets/mosemm-v2/time_series'
+    output_dir = 'C:/Users/rreal/OneDrive/datasets/CONAGUA_MoSeMM2/time_series_test'
 
 [reports]
     export = false
@@ -55,7 +55,7 @@
     output_dir = 'C:/Users/rreal/OneDrive/datasets/mosemm/test-3/reports'
 
 [pgdi_maps]
-    export = true
+    export = false
     output_period_to_export = "last"
     input_data_dir = 'C:/Users/rreal/OneDrive/datasets/pysdi_05-vtest'
     input_data_fpatt = '**/*.nc4'

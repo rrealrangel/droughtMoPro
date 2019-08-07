@@ -14,9 +14,9 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-import mosemm_products.data_manager as dmgr
-import mosemm_products.spatial_analysis as span
-import mosemm_products.maps_sdi as maps
+import data_manager as dmgr
+import spatial_analysis as span
+import maps_sdi as maps
 
 #index_cats = {
 #    # credit: https://www.researchgate.net/profile/Omar_Cenobio-Cruz

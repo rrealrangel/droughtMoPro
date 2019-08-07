@@ -10,11 +10,11 @@ License
 """
 import datetime as dt
 
-import mosemm_products.data_manager as dmgr
-import mosemm_products.maps_pgdi as pgdi
-import mosemm_products.maps_sdi as maps
-import mosemm_products.reports as rep
-import mosemm_products.time_series as ts
+from droughtMoPro import data_manager as dmgr
+from droughtMoPro import maps_pgdi as pgdi
+from droughtMoPro import maps_sdi as maps
+from droughtMoPro import reports as rep
+from droughtMoPro import time_series as ts
 
 run_start = dt.datetime.now()
 print("---- Process started at {start} ----".format(start=run_start))

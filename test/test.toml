@@ -40,11 +40,11 @@
 
 [time_series]
     export = true
-    input_data_fpatt = '**/*PRESMORUN-01*.nc4'
-    input_vmaps_dir = 'C:/Users/rreal/Mega/projects/multiannual/mosemm/main/droughtMoPro/test/regions/hidrografia'
-    input_mapfile_patt = '**/*.shp'
+    input_data_fpatt = '**/*SSI-06*.nc4'
+    input_vmaps_dir = 'C:/Users/rreal/Mega/projects/multiannual/mosemm/main/droughtMoPro/test/regions'
+    input_mapfile_patt = '**/*estados.shp'
     output_period_to_export = "all"
-    output_dir = 'C:/Users/rreal/OneDrive/datasets/CONAGUA_MoSeMM2/time_series_test'
+    output_dir = 'C:/Users/rreal/Mega/projects/multiannual/mosemm/divulg/201901_j_hydroinf/analysis/sdi_vs_yield_losses/time_series_ssi_06'
 
 [reports]
     export = false

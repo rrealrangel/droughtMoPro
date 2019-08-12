@@ -189,7 +189,7 @@ def export_ts(data_files, map_files, nodata, output_dir):
         output_subdir.mkdir(parents=True, exist_ok=True)
 
         for mf, map_feature in enumerate(map_layer):
-            # We define an output in-memory OGR dataset
+            # Define an output in-memory OGR dataset
             region = ogr.GetDriverByName('Memory').CreateDataSource('out')
             region_layer = region.CreateLayer('', geom_type=ogr.wkbPolygon)
 
@@ -261,30 +261,31 @@ def export_ts(data_files, map_files, nodata, output_dir):
             dint_quant.to_csv(dint_quant_fname)
 
             # ---- Droght magnitude: area fraction ----
-            dmag_area = magnitude_area(
-                input_data=data_trimmed.Drought_magnitude,
-                header=dmag_header
-                )
-            dmag_area_fname = output_subdir / (
-                '{id01}_{id02}_dmag_area.csv'.format(
-                    id01=map_feature.GetField('ID_01'),
-                    id02=map_feature.GetField('ID_02')
+            if 'Drought_magnitude' in data_trimmed.data_vars.keys():
+                dmag_area = magnitude_area(
+                    input_data=data_trimmed.Drought_magnitude,
+                    header=dmag_header
                     )
-                )
-            dmag_area.to_csv(dmag_area_fname)
+                dmag_area_fname = output_subdir / (
+                    '{id01}_{id02}_dmag_area.csv'.format(
+                        id01=map_feature.GetField('ID_01'),
+                        id02=map_feature.GetField('ID_02')
+                        )
+                    )
+                dmag_area.to_csv(dmag_area_fname)
 
-            # ---- Drought magnitude: quantiles ----
-            dmag_quant = quantiles(
-                input_data=data_trimmed.Drought_magnitude,
-                header=quantile_header
-                )
-            dmag_quant_fname = output_subdir / (
-                '{id01}_{id02}_dmag_quant.csv'.format(
-                    id01=map_feature.GetField('ID_01'),
-                    id02=map_feature.GetField('ID_02')
+                # ---- Drought magnitude: quantiles ----
+                dmag_quant = quantiles(
+                    input_data=data_trimmed.Drought_magnitude,
+                    header=quantile_header
                     )
-                )
-            dmag_quant.to_csv(dmag_quant_fname)
+                dmag_quant_fname = output_subdir / (
+                    '{id01}_{id02}_dmag_quant.csv'.format(
+                        id01=map_feature.GetField('ID_01'),
+                        id02=map_feature.GetField('ID_02')
+                        )
+                    )
+                dmag_quant.to_csv(dmag_quant_fname)
 
             # Progress message.
             dmgr.progress_message(

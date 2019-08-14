@@ -24,6 +24,7 @@ import xarray as xr
 
 import data_manager as dmgr
 
+
 def intensity_area(input_data, header):
     """
     Parameters
@@ -240,9 +241,10 @@ def export_ts(data_files, map_files, nodata, output_dir):
                 header=dint_header
                 )
             dint_area_fname = output_subdir / (
-                '{id01}_{id02}_dint_area.csv'.format(
+                '{id01}_{id02}_{sdi}_dint_area.csv'.format(
                     id01=map_feature.GetField('ID_01'),
-                    id02=map_feature.GetField('ID_02')
+                    id02=map_feature.GetField('ID_02'),
+                    sdi=data.attrs['Title'].lower()
                     )
                 )
             dint_area.to_csv(dint_area_fname)
@@ -253,9 +255,10 @@ def export_ts(data_files, map_files, nodata, output_dir):
                 header=quantile_header
                 )
             dint_quant_fname = output_subdir / (
-                '{id01}_{id02}_dint_quant.csv'.format(
+                '{id01}_{id02}_{sdi}_dint_quant.csv'.format(
                     id01=map_feature.GetField('ID_01'),
-                    id02=map_feature.GetField('ID_02')
+                    id02=map_feature.GetField('ID_02'),
+                    sdi=data.attrs['Title'].lower()
                     )
                 )
             dint_quant.to_csv(dint_quant_fname)
@@ -267,9 +270,10 @@ def export_ts(data_files, map_files, nodata, output_dir):
                     header=dmag_header
                     )
                 dmag_area_fname = output_subdir / (
-                    '{id01}_{id02}_dmag_area.csv'.format(
+                    '{id01}_{id02}_{sdi}_dmag_area.csv'.format(
                         id01=map_feature.GetField('ID_01'),
-                        id02=map_feature.GetField('ID_02')
+                        id02=map_feature.GetField('ID_02'),
+                        sdi=data.attrs['Title'].lower()
                         )
                     )
                 dmag_area.to_csv(dmag_area_fname)
@@ -280,9 +284,10 @@ def export_ts(data_files, map_files, nodata, output_dir):
                     header=quantile_header
                     )
                 dmag_quant_fname = output_subdir / (
-                    '{id01}_{id02}_dmag_quant.csv'.format(
+                    '{id01}_{id02}_{sdi}_dmag_quant.csv'.format(
                         id01=map_feature.GetField('ID_01'),
-                        id02=map_feature.GetField('ID_02')
+                        id02=map_feature.GetField('ID_02'),
+                        sdi=data.attrs['Title'].lower()
                         )
                     )
                 dmag_quant.to_csv(dmag_quant_fname)

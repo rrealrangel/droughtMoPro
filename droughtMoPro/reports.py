@@ -10,6 +10,7 @@ License
 -------
     GNU General Public License
 """
+from pathlib2 import Path
 import ogr
 import pandas as pd
 import xarray as xr
@@ -80,17 +81,10 @@ def make_report(data_files, map_files, output_dir, nodata=-32768):
     Source:
     https://pcjericks.github.io/py-gdalogr-cookbook/vector_layers.html
     """
-    data = xr.open_mfdataset(paths=data_files)
+    data = xr.open_mfdataset(paths=data_files, concat_dim='time')
 
-    if len(data_files) == 1:
-        data = data.expand_dims(dim='time')
-
-#    drought_intensity = data.Drought_intensity
-#    drought_magnitude = data.Drought_magnitude
-
-#    for data in [drought_intensity, drought_magnitude]:
     for v, variable in data.data_vars.items():
-        for map_file in [map_files[4]]:
+        for map_file in map_files:
             map_ = ogr.Open(str(map_file))
             map_name = map_file.stem
             print("    - The map '{}' was loaded.".format(map_name))
@@ -175,7 +169,7 @@ def make_report(data_files, map_files, output_dir, nodata=-32768):
                 ['Clave', 'Nombre', 'Entidad'] +
                 [c for c in report if c not in ['Clave', 'Nombre', 'Entidad']]
                 ]
-
+            Path(output_dir).mkdir(parents=True, exist_ok=True)
             report.to_excel(
                 excel_writer=(
                     output_dir + '/' + v + '.xlsx'

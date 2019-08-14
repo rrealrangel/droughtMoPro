@@ -143,7 +143,7 @@ def list_files(parent_dir, pattern, what='all'):
             if j in str(i)
             ]))
 
-    elif isinstance(what, unicode):
+    elif isinstance(what, basestring):
         return(sorted([
             i
             for i in files_list

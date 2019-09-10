@@ -21,7 +21,7 @@
     #       false) the existent files.
     #
 
-    input_data_dir = "C:/Users/rreal/onedrive_backup/IIUNAM_SDI2.1"
+    input_data_dir = 'C:/Users/rreal/OneDrive/datasets/IIUNAM_SDI2.1_MEX'
     overwrite = false  # Still not implemented.
     output_prefix = 'IIUNAM_MERRA2_'
     NODATA = -32768
@@ -34,25 +34,25 @@
 
 [magnitude_maps]
     export = false
-    input_data_fpatt = '**/*.nc4'
+    input_data_fpatt = '**/*PRESMORUN-01*.nc4'
     output_period_to_export = "last"
     output_dir = 'C:/Users/rreal/OneDrive/datasets/CONAGUA_MoSeMM2/maps'
 
 [time_series]
-    export = false
-    input_data_fpatt = '**/*PRERUN-03*.nc4'
+    export = true
+    input_data_fpatt = '**/*PRESMORUN-01*.nc4'
     input_vmaps_dir = 'C:/Users/rreal/Mega/projects/multiannual/mosemm/main/droughtMoPro/test/regions'
-    input_mapfile_patt = '**/*estados.shp'
+    input_mapfile_patt = '**/*pais.shp'
     output_period_to_export = "all"
-    output_dir = 'C:/Users/rreal/Mega/projects/multiannual/mosemm/divulg/201901_j_hydroinf/analysis/sdi_vs_yield_losses/time_series_msdi_prerun'
+    output_dir = 'C:/Users/rreal/OneDrive/datasets/CONAGUA_MoSeMM2'
 
 [reports]
     export = true
     input_data_fpatt = '**/*PRESMORUN-01*.nc4'
     input_regions_dir = 'C:/Users/rreal/Mega/projects/multiannual/mosemm/main/droughtMoPro/test/regions'
-    input_mapfile_patt = '**/*municipios.shp'
-    output_period_to_export = "201902"
-    output_dir = 'C:/Users/rreal/OneDrive/datasets/CONAGUA_MoSeMM2_test/reports'
+    input_mapfile_patt = '**/*pais.shp'
+    output_period_to_export = "last"
+    output_dir = 'C:/Users/rreal/OneDrive/datasets/CONAGUA_MoSeMM2/reports'
 
 [pgdi_maps]
     export = false

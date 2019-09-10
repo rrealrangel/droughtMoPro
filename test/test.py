@@ -53,7 +53,7 @@ if settings.magnitude_maps['export']:
     # Available source data to generate drought monitoring products.
     data_files = dmgr.list_files(
         parent_dir=settings.general['input_data_dir'],
-        pattern=settings.magnitude_maps['data_fpatt'],
+        pattern=settings.magnitude_maps['input_data_fpatt'],
         what=settings.magnitude_maps['output_period_to_export']
         )
 

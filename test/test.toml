@@ -30,16 +30,16 @@
     export = false
     input_data_fpatt = '**/*.nc4'
     output_period_to_export = "last"
-    output_dir = 'C:/Users/rreal/OneDrive/datasets/CONAGUA_MoSeMM2/maps'
+    output_dir = 'C:/Users/rreal/OneDrive/datasets/CONAGUA_MoSeMM2/mapas'
 
 [magnitude_maps]
     export = false
     input_data_fpatt = '**/*PRESMORUN-01*.nc4'
     output_period_to_export = "last"
-    output_dir = 'C:/Users/rreal/OneDrive/datasets/CONAGUA_MoSeMM2/maps'
+    output_dir = 'C:/Users/rreal/OneDrive/datasets/CONAGUA_MoSeMM2/mapas'
 
 [time_series]
-    export = true
+    export = false
     input_data_fpatt = '**/*PRESMORUN-01*.nc4'
     input_vmaps_dir = 'C:/Users/rreal/Mega/projects/multiannual/mosemm/main/droughtMoPro/test/regions'
     input_mapfile_patt = '**/*pais.shp'
@@ -47,19 +47,19 @@
     output_dir = 'C:/Users/rreal/OneDrive/datasets/CONAGUA_MoSeMM2'
 
 [reports]
-    export = true
+    export = false
     input_data_fpatt = '**/*PRESMORUN-01*.nc4'
     input_regions_dir = 'C:/Users/rreal/Mega/projects/multiannual/mosemm/main/droughtMoPro/test/regions'
     input_mapfile_patt = '**/*pais.shp'
     output_period_to_export = "last"
-    output_dir = 'C:/Users/rreal/OneDrive/datasets/CONAGUA_MoSeMM2/reports'
+    output_dir = 'C:/Users/rreal/OneDrive/datasets/CONAGUA_MoSeMM2/reportes'
 
 [pgdi_maps]
-    export = false
+    export = true
     output_period_to_export = "last"
-    input_data_dir = 'C:/Users/rreal/OneDrive/datasets/pysdi_05-vtest'
+    input_data_dir = "C:/Users/rreal/OneDrive/datasets/IIUNAM_SDI2.1_05"
     input_data_fpatt = '**/*.nc4'
-    input_filter_fpath = 'C:/Users/rreal/Mega/projects/multiannual/05-mosemm/main/sample/pgdi/sdi_filter.nc4'
+    input_filter_fpath = "C:/Users/rreal/Mega/projects/multiannual/mosemm/main/droughtMoPro/test/pgdi/sdi_filter.nc4"
     input_trim_vmap = 'C:/Users/rreal/OneDrive/geoinfo/division_politica/mexico/limite_nacional/limite_nacional_1a1000000/datos/contdv1m_epsg4326/contdv1m_epsg4326.shp'
     OUTPUT_RES = 0.0625
-    output_dir = 'C:/Users/rreal/OneDrive/datasets/mosemm-v2/maps/pgdi_test'
+    output_dir = "C:/Users/rreal/OneDrive/datasets/CONAGUA_MoSeMM2/mapas/pgdi"

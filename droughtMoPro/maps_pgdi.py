@@ -7,7 +7,6 @@ Created on Sat Nov  3 21:33:05 2018
 import os
 
 from grass.script import array as garray
-from pathlib2 import Path
 import grass.script as grass
 from scipy.spatial import distance_matrix
 import numpy as np
@@ -16,41 +15,6 @@ import xarray as xr
 
 import data_manager as dmgr
 import spatial_analysis as span
-import maps_sdi as maps
-
-#index_cats = {
-#    # credit: https://www.researchgate.net/profile/Omar_Cenobio-Cruz
-#    1: 'MSDI_PRESMO01',
-#    2: 'MSDI_PRESMO03',
-#    3: 'MSDI_PRESMO06',
-#    4: 'MSDI_PRESMO09',
-#    5: 'MSDI_PRESMO12',
-#    6: 'MSDI_PRERUN01',
-#    7: 'MSDI_PRERUN03',
-#    8: 'MSDI_PRERUN06',
-#    9: 'MSDI_PRERUN09',
-#    10: 'MSDI_PRERUN12',
-#    11: 'MSDI_PRESMORUN01',
-#    12: 'MSDI_PRESMORUN03',
-#    13: 'MSDI_PRESMORUN06',
-#    14: 'MSDI_PRESMORUN09',
-#    15: 'MSDI_PRESMORUN12',
-#    16: 'SPI01',
-#    17: 'SPI03',
-#    18: 'SPI06',
-#    19: 'SPI09',
-#    20: 'SPI12',
-#    21: 'SRI01',
-#    22: 'SRI03',
-#    23: 'SRI06',
-#    24: 'SRI09',
-#    25: 'SRI12',
-#    26: 'SSI01',
-#    27: 'SSI03',
-#    28: 'SSI06',
-#    29: 'SSI09',
-#    30: 'SSI12'
-#    }
 
 index_cats = {
     # credit: https://www.researchgate.net/profile/Omar_Cenobio-Cruz
@@ -118,23 +82,11 @@ def apply_pgdi_filter(data_files, input_filter_fpath):
         )
 
     for sdi_name, sdi_data in sdi.data_vars.items():
-        pgdi = xr.where(pgdi_filter==index_cats[sdi_name], sdi[sdi_name], pgdi)
-#        
-#
-#
-#    for lat in pgdi.lat.values:
-#        for lon in pgdi.lon.values:
-#            try:
-#                cat = pgdi_filter.sel(
-#                    indexers={'lat': lat, 'lon': lon}
-#                    ).values.item()
-#
-#                pgdi.loc[{'lat': lat, 'lon': lon}] = sdi[index_cats[cat]].sel(
-#                    indexers={'lat': lat, 'lon': lon}
-#                    ).values
-#
-#            except KeyError:
-#                pass
+        pgdi = xr.where(
+            pgdi_filter == index_cats[sdi_name],
+            sdi[sdi_name],
+            pgdi
+            )
 
     return(pgdi)
 
@@ -393,7 +345,7 @@ def kml_style_dint(input_file):
             kml_out.write("\n")
 
 
-def export_dint(data, nodata=-32768):
+def export_dint(data, output_fpath, nodata=-32768):
     """
     """
     # Vectorize the input data in GRASS GIS.
@@ -401,40 +353,16 @@ def export_dint(data, nodata=-32768):
     export_to_grass(data, map_name='map_to_export', nodata=nodata)
     raster2vector_dint(input_map='map_to_export')
 
-    # Export the data as a KML file.
-#    # - Build the output file name.
-#    index = data.attrs['DroughtIndex'].lower()
-#    time_scale = data.attrs['TemporalScale'][:2].strip().zfill(2)
-#    year = str(data.time.dt.year.values)
-#    output_subdir = Path(index + time_scale) / year
-#    output_fname = (
-#        output_fname_prefix + rename_indices(data.attrs['DroughtIndex'])
-#        + time_scale + '_' + year + str(data.time.dt.month.values).zfill(2) +
-#        '_res.kml'
-#        )
-#
-#    # - Make the directory, in case it does not exists.
-#    (Path(output_dir) / output_subdir).mkdir(
-#        parents=True,
-#        exist_ok=True
-#        )
-
-    # Export the KML file and modify its style.
-#    output_full_path = Path(output_dir) / output_subdir / output_fname
     grass.run_command(
         'v.out.ogr',
         input='map_to_export',
-#        output=str(output_full_path),
-        output='C:/Users/rreal/OneDrive/datasets/mosemm-v2/maps/pgdi_test/2019/IIUNAM_PGDI_201906.kml',
+        output=str(output_fpath),
         format='KML',
         overwrite=True,
         quiet=True
         )
-#    kml_style_dint(
-#        input_file=str(output_full_path)
-#        )
     kml_style_dint(
-        input_file=str('C:/Users/rreal/OneDrive/datasets/mosemm-v2/maps/pgdi_test/2019/IIUNAM_PGDI_201906.kml')
+        input_file=str(output_fpath)
         )
 
 
@@ -468,14 +396,14 @@ def export_pgdi_maps(
 
     pgdi_out.to_netcdf(str(nc4_file))
 
-#    pgdi_out.attrs['DroughtIndex'] = 'PGDI'
-#    pgdi_out.attrs['TemporalScale'] = '00'
+    pgdi_out.attrs['DroughtIndex'] = 'PGDI'
+    pgdi_out.attrs['TemporalScale'] = '00'
 
     print("    - Exporting the KML file.")
-#    kml_file = str(nc4_file).replace('.nc4', '.kml')
+    kml_fname = str(nc4_file).replace('.nc4', '.kml')
 #
 #    export_dint(
 #        input_file=str(nc4_file),
 #        output_dir=output_dir
 #        )
-    export_dint(data=pgdi_out, nodata=-32768)
+    export_dint(data=pgdi_out, output_fpath=kml_fname, nodata=-32768)

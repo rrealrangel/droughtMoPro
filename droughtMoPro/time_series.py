@@ -22,7 +22,7 @@ from pathlib2 import Path
 import ogr
 import xarray as xr
 
-import data_manager as dmgr
+from droughtMoPro import data_manager as dmgr
 
 
 def intensity_area(input_data, header):

@@ -15,7 +15,7 @@ import ogr
 import pandas as pd
 import xarray as xr
 
-import data_manager as dmgr
+from droughtMoPro import data_manager as dmgr
 
 
 def ratio_per_category(input_data, indicator):

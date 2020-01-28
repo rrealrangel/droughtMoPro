@@ -15,6 +15,7 @@ from collections import OrderedDict
 from pandas import DateOffset
 from pandas import date_range
 from pathlib2 import Path
+from six import string_types
 import datetime as dt
 import gdal
 import toml
@@ -99,7 +100,7 @@ def list_files(parent_dir, pattern, what='all'):
     parent_dir = Path(parent_dir)
     files_list = []
 
-    if isinstance(pattern, basestring):
+    if isinstance(pattern, string_types):
         pattern = [pattern]
 
     for patt in pattern:
@@ -143,7 +144,7 @@ def list_files(parent_dir, pattern, what='all'):
             if j in str(i)
             ]))
 
-    elif isinstance(what, basestring):
+    elif isinstance(what, string_types):
         return(sorted([
             i
             for i in files_list

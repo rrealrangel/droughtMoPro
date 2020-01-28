@@ -13,8 +13,8 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-import data_manager as dmgr
-import spatial_analysis as span
+from droughtMoPro import data_manager as dmgr
+from droughtMoPro import spatial_analysis as span
 
 index_cats = {
     # credit: https://www.researchgate.net/profile/Omar_Cenobio-Cruz

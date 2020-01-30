@@ -163,7 +163,7 @@ def name_pgdi_outfile(data, output_dir):
         output_dir +
         '/' +
         tlabel_year +
-        '/IIUNAM_PGDI_' +
+        '/PGDI_' +
         date_label +
         '.nc4'
         ))

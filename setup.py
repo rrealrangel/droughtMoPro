@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
      name='droughtMoPro',
-     version='v0.1.3',
+     version='v0.1.3.1',
      description='Generator of drought monitoring products.',
      url='https://github.com/rrealrangel/droughtMoPro',
      author='R. A. Real-Rangel',
@@ -16,6 +16,7 @@ setup(
          'dask',
          'netcdf4',
          'numpy',
+         'openpyxl',
          'pandas',
          'pathlib2',
          'scipy',

@@ -21,33 +21,33 @@
     #       false) the existent files.
     #
 
-    input_data_dir = 'C:/Users/rreal/OneDrive/datasets/IIUNAM_SDI2.1_MEX'
+    input_data_dir = 'C:/Users/rreal/Mega/projects/multiannual/doctorado/analysis/sdi'
     overwrite = false  # Still not implemented.
-    output_prefix = 'test_'
+    output_prefix = ''
     NODATA = -32768
 
 [intensity_maps]
-    export = true
+    export = false
     input_data_fpatt = '**/*.nc4'
     output_period_to_export = "last"
     output_dir = 'C:/Users/rreal/OneDrive/datasets/monitoreo_de_sequias/mapas'
 
 [magnitude_maps]
-    export = true
+    export = false
     input_data_fpatt = '**/*MSDI_PRESMORUN-01*.nc4'
     output_period_to_export = "last"
     output_dir = 'C:/Users/rreal/OneDrive/datasets/monitoreo_de_sequias/mapas'
 
 [time_series]
     export = true
-    input_data_fpatt = '**/*MSDI_PRESMORUN-01*.nc4'
+    input_data_fpatt = '**/*SSI-03*.nc4'
     input_vmaps_dir = 'C:/Users/rreal/Mega/projects/multiannual/mosemm/main/droughtMoPro/test/regions'
-    input_mapfile_patt = '**/*pais.shp'
+    input_mapfile_patt = '**/*estados.shp'
     output_period_to_export = "all"
-    output_dir = 'C:/Users/rreal/OneDrive/datasets/monitoreo_de_sequias/series'
+    output_dir = 'C:/Users/rreal/Mega/projects/multiannual/doctorado/analysis/sdi_series'
 
 [reports]
-    export = true
+    export = false
     input_data_fpatt = '**/*MSDI_PRESMORUN-01*.nc4'
     input_regions_dir = 'C:/Users/rreal/Mega/projects/multiannual/mosemm/main/droughtMoPro/test/regions'
     input_mapfile_patt = '**/*pais.shp'

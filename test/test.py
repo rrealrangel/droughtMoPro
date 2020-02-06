@@ -33,7 +33,7 @@ if settings.intensity_maps['export']:
 
     for df, data_file in enumerate(data_files):
         maps.export_dint(
-            input_file=data_file,
+            input_file=str(data_file),
             output_dir=settings.intensity_maps['output_dir'],
             nodata=settings.general['NODATA'],
             output_fname_prefix=settings.general['output_prefix'],
@@ -59,7 +59,7 @@ if settings.magnitude_maps['export']:
 
     for df, data_file in enumerate(data_files):
         maps.export_dmag(
-            input_file=data_file,
+            input_file=str(data_file),
             output_dir=settings.magnitude_maps['output_dir'],
             nodata=settings.general['NODATA'],
             output_fname_prefix=settings.general['output_prefix'],
@@ -85,7 +85,7 @@ if settings.time_series['export']:
         pattern=settings.time_series['input_mapfile_patt']
         )
     ts.export_ts(
-        data_files=data_files,
+        data_files=[str(i) for i in data_files],
         map_files=map_files,
         nodata=settings.general['NODATA'],
         output_dir=settings.time_series['output_dir']
@@ -105,7 +105,7 @@ if settings.reports['export']:
         pattern=settings.reports['input_mapfile_patt']
         )
     rep.make_report(
-        data_files=data_files,
+        data_files=[str(i) for i in data_files],
         map_files=map_files,
         output_dir=settings.reports['output_dir'],
         nodata=settings.general['NODATA']
@@ -121,7 +121,7 @@ if settings.pgdi_maps['export']:
         what=settings.pgdi_maps['output_period_to_export']
         )
     pgdi.export_pgdi_maps(
-        data_files=data_files,
+        data_files=[str(i) for i in data_files],
         filter_file=settings.pgdi_maps['input_filter_fpath'],
         trim_vmap=settings.pgdi_maps['input_trim_vmap'],
         output_res=settings.pgdi_maps['OUTPUT_RES'],

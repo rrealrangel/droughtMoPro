@@ -22,7 +22,7 @@ from pathlib2 import Path
 import ogr
 import xarray as xr
 
-import data_manager as dmgr
+from droughtMoPro import data_manager as dmgr
 
 
 def intensity_area(input_data, header):
@@ -124,7 +124,7 @@ def quantiles(input_data, header):
     """
     quant = xr.Dataset(
         data_vars={
-            'p0': input_data.quantile(
+            'min': input_data.quantile(
                 q=0.00,
                 dim=['lat', 'lon']
                 ).drop('quantile'),
@@ -140,7 +140,7 @@ def quantiles(input_data, header):
                 q=0.75,
                 dim=['lat', 'lon']
                 ).drop('quantile'),
-            'p100': input_data.quantile(
+            'max': input_data.quantile(
                 q=1.00,
                 dim=['lat', 'lon']
                 ).drop('quantile')
@@ -160,10 +160,10 @@ def export_ts(data_files, map_files, nodata, output_dir):
     """
     Parameters
     ----------
-    data_files
-    map_files
-    nodata
-    output_dir
+    data_files : list
+    map_files : list
+    nodata : int
+    output_dir : str
 
     Returns
     -------

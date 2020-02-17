@@ -1,6 +1,6 @@
-import data_manager
-import maps_pgdi
-import maps_sdi
-import reports
-import spatial_analysis
-import time_series
+from .data_manager import *
+from .maps_pgdi import *
+from .maps_sdi import *
+from .reports import *
+from .spatial_analysis import *
+from .time_series import *

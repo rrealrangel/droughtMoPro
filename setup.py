@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
      name='droughtMoPro',
-     version='v0.1.3.1',
+     version='v0.1.3.2',
      description='Generator of drought monitoring products.',
      url='https://github.com/rrealrangel/droughtMoPro',
      author='R. A. Real-Rangel',

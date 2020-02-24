@@ -171,8 +171,7 @@ def export_ts(data_files, map_files, nodata, output_dir):
     print("    - Importing data. This may take a while. Please wait.")
     data = xr.open_mfdataset(
         paths=data_files,
-        concat_dim='time',
-        autoclose=True
+        concat_dim='time'
         )
     dint_header = ['not_drought', 'd0', 'd1', 'd2', 'd3', 'd4']
     dmag_header = ['not_drought', 'm1', 'm2', 'm3', 'm4', 'm5']

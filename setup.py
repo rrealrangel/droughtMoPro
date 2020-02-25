@@ -14,7 +14,8 @@ setup(
      classifiers=[
         "Development Status :: 3 - Alpha",
         "Topic :: Scientific/Engineering :: Hydrology",
-        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)"]
+        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)"
+        ],
      install_requires=[
          'datetime',
          'dask',

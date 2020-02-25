@@ -1,4 +1,4 @@
-# _droughtmopro_
+# _droughtMoPro_
 This is a set of scripts to generate drought monitoring products. Input datasets can be generated using the package [_pysdi_](https://bitbucket.org/pysdi/pysdi).
 
 Documentation is in development.

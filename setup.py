@@ -7,11 +7,11 @@ with open(path.join(this_directory, 'README.md')) as f:
     long_description = f.read()
 
 def read(*rnames):
-    return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
+    return open(path.join(path.dirname(__file__), *rnames)).read()
 
 setup(
      name='droughtMoPro',
-     version='v0.1.3.3.1',
+     version='v0.1.4',
      author='R. A. Real-Rangel',
      author_email='rrealr@iingen.unam.mx',
      description='Generator of drought monitoring products.',
@@ -22,7 +22,7 @@ setup(
      long_description=long_description,
      long_description_content_type='text/markdown',
      classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 4 - Beta",
         "Topic :: Scientific/Engineering :: Hydrology",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)"
         ],

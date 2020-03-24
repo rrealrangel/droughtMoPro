@@ -11,7 +11,7 @@ def read(*rnames):
 
 setup(
      name='droughtMoPro',
-     version='v0.1.4',
+     version='v0.1.5',
      author='R. A. Real-Rangel',
      author_email='rrealr@iingen.unam.mx',
      description='Generator of drought monitoring products.',

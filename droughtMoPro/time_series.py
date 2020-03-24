@@ -171,8 +171,7 @@ def export_ts(data_files, map_files, nodata, output_dir):
     print("    - Importing data. This may take a while. Please wait.")
     data = xr.open_mfdataset(
         paths=data_files,
-        concat_dim='time',
-        autoclose=True
+        concat_dim='time'
         )
     dint_header = ['not_drought', 'd0', 'd1', 'd2', 'd3', 'd4']
     dmag_header = ['not_drought', 'm1', 'm2', 'm3', 'm4', 'm5']
@@ -207,11 +206,13 @@ def export_ts(data_files, map_files, nodata, output_dir):
             region_layer.CreateFeature(region_feature_geometry)
 
             # Create a mask
-            res = data.attrs['LatitudeResolution']
+            res_y = data.attrs['LatitudeResolution']
+            res_x = data.attrs['LongitudeResolution']
             mask = dmgr.vector2array(
-                res=res,
-                xmin=min(data.lon.values) - (res / 2),
-                ymax=max(data.lat.values) + (res / 2),
+                res_x=res_x,
+                res_y=res_y,
+                xmin=min(data.lon.values) - (res_x / 2),
+                ymax=max(data.lat.values) + (res_y / 2),
                 cols=len(data.lon.values),
                 rows=len(data.lat.values),
                 layer=region_layer,

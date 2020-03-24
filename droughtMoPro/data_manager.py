@@ -35,7 +35,7 @@ class Configurations():
             setattr(self, key, value)
 
 
-def vector2array(xmin, ymax, cols, rows, res, layer, nodata):
+def vector2array(xmin, ymax, cols, rows, res_x, res_y, layer, nodata):
     # Create the destination data source
     targetDS = (
         gdal.GetDriverByName('MEM').Create(
@@ -43,7 +43,14 @@ def vector2array(xmin, ymax, cols, rows, res, layer, nodata):
             )
         )
 
-    targetDS.SetGeoTransform((xmin, res, 0, ymax, 0, - res))
+    targetDS.SetGeoTransform((
+        xmin,  # Leftmost pixel position.
+        res_x,  # The pixel width.
+        0,
+        ymax,  # Upper pixel position.
+        0,
+        -res_y  # The pixel height.
+        ))
     band = targetDS.GetRasterBand(1)
     band.SetNoDataValue(nodata)
 
@@ -164,7 +171,7 @@ def name_pgdi_outfile(data, output_dir):
         output_dir +
         '/' +
         tlabel_year +
-        '/IIUNAM_PGDI_' +
+        '/PGDI_' +
         date_label +
         '.nc4'
         ))

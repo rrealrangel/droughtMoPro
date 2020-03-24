@@ -115,11 +115,13 @@ def make_report(data_files, map_files, output_dir, nodata=-32768):
                 region_layer.CreateFeature(region_feature_geometry)
 
                 # Create a mask
-                res = data.attrs['LatitudeResolution']
+                res_y = data.attrs['LatitudeResolution']
+                res_x = data.attrs['LongitudeResolution']
                 mask = dmgr.vector2array(
-                    res=res,
-                    xmin=min(variable.lon.values) - (res / 2),
-                    ymax=max(variable.lat.values) + (res / 2),
+                    res_x=res_x,
+                    res_y=res_y,
+                    xmin=min(variable.lon.values) - (res_x / 2),
+                    ymax=max(variable.lat.values) + (res_y / 2),
                     cols=len(variable.lon.values),
                     rows=len(variable.lat.values),
                     layer=region_layer,
